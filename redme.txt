@@ -1,0 +1,403 @@
+สรุปข้อเสนอโครงการ (Project Charter Summary) : PaceSet
+
+1. ข้อมูลทั่วไปโครงการ (Project Overview)
+
+- ชื่อโครงการ: PaceSet
+- แนวคิดหลัก: Mobile Web Application หรือในอนาคตทำเป็น Application ลง play store สำหรับช่วยควบคุมเวลาและจังหวะการออกกำลังกาย (Pacing) รองรับทั้งการฝึกแบบสลับเวลา (Interval) และการนับรอบ/เซ็ต (Reps & Sets) พร้อมระบบแสดงภาพประกอบท่าทาง
+ สามารถเซ็ตวันในแต่ละโปรแกรมการออกกำลังกายได้เช่น
+    A{
+    - 1 คนมีได้หลายโปรแกรม
+    - ใน 1 วันจะเลือกใช้โปรแกรมไหนบ้าง
+    }
+    1 คนมี A ได้หลายชุด
+- เป้าหมายหลัก: พัฒนา Full-Stack Web Application ด้วย TypeScript ทั้งระบบ เพื่อฝึกฝนทักษะการใช้งาน Next.js, Nest.js, PostgreSQL และ Firebase Cloud Storage
+
+2. โครงสร้างเทคโนโลยี (Tech Stack Architecture)
+
+A.
+ส่วนประกอบ
+- Frontend
+เทคโนโลยี
+- Next.js (TypeScript)
+บทบาทและหน้าที่หลัก
+• หน้า Web App สำหรับจับเวลาบนมือถือ• จัดการ Real-time State ของเวลา
+• ป้องกันหน้าจอดับด้วย Screen Wake Lock API
+
+B.
+ส่วนประกอบ
+- Backend
+เทคโนโลยี
+- Nest.js (TypeScript)
+บทบาทและหน้าที่หลัก
+• ให้บริการ RESTful API
+• จัดการ Authentication และ User Profile
+• จัดการระบบ CRUD ตารางออกกำลังกาย
+
+C.
+ส่วนประกอบ
+- Database
+เทคโนโลยี
+- PostgreSQL (Prisma ORM)
+บทบาทและหน้าที่หลัก
+• จัดเก็บข้อมูลเชิงสัมพันธ์อย่างเป็นระบบ (Users, Workouts, Exercise Steps, History)
+
+D.
+ส่วนประกอบ
+- Media Storage
+เทคโนโลยี
+- Firebase Cloud Storage
+บทบาทและหน้าที่หลัก
+• ฝากไฟล์และจัดส่งรูปภาพ/วิดีโอสาธิตท่าทางการออกกำลังกายผ่าน CDN
+
+3. ฟีเจอร์หลักของระบบ (Key Core Features)
+    1 Dual-Mode Workout Engine:
+    • Interval Mode: จับเวลาสลับช่วงออกกำลังกายและช่วงพัก (เช่น วิ่งเร็ว 15 วินาที / เดิน 5 วินาที) ต่อเนื่องจนครบเวลา
+    • Reps & Sets Mode: กำหนดจำนวนครั้งและเซ็ต (เช่น สควอท 7 รอบ x 4 เซ็ต) พร้อมนาฬิกานับถอยหลังช่วงพักเซ็ต
+    2 Visual Exercise Guidance:
+    • แสดงภาพประกอบและคำแนะนำท่าทางการออกกำลังกายที่ถูกต้อง โดยดึงไฟล์จาก Firebase Storage
+    3 Mobile-Optimized Experience:
+    • ใช้ Screen Wake Lock API ป้องกันหน้าจอดับขณะจับเวลา
+    • มีเสียงสัญญาณเตือน (Audio Beeps) เมื่อถึงเวลาสลับช่วง
+    4 Custom Program Management:
+    • สร้าง ปรับแต่ง และบันทึกตารางการออกกำลังกายส่วนตัวลงในฐานข้อมูล PostgreSQL
+    5 Hydration Reminder (แจ้งเตือนกินน้ำ):
+    • แจ้งเตือนตามช่วงเวลาทั้งวัน (เช่น ทุก 1–2 ชม.) ขณะเปิดแอปอยู่ ผ่าน Browser Notification API
+    • ตั้งค่าเปิด/ปิด และเลือกช่วงเวลาได้ใน Profile / Settings
+    6 Internationalization (i18n):
+    • สลับภาษา Thai / English ทั้ง UI
+
+4. ทักษะที่จะได้รับจากการทำโปรเจกต์นี้ (Technical Learning Outcomes)
+    • Full-Stack TypeScript Mastery: การเขียน TypeScript แบบ End-to-End ทั้ง Client-side และ Server-side พร้อมการแชร์ Data Interfaces
+    • Relational Database Design: การออกแบบ Schema และการใช้ Prisma ORM จัดการ Migration บน PostgreSQL
+    • Clean Architecture: การวางโครงสร้าง Backend API ด้วย Modular Architecture และ Dependency Injection ตามมาตรฐาน Nest.js
+    • Hybrid Cloud Integration: การเชื่อมต่อระบบ Custom Backend ร่วมกับบริการ Third-party Cloud Storage (Firebase)
+
+5. ผู้ใช้และการยืนยันตัวตน (User & Auth)
+    • Role: ผู้ใช้ทั่วไปเท่านั้น (ยังไม่มี Admin UI ใน MVP)
+    • Auth: สมัคร / เข้าสู่ระบบด้วย Email + Password
+    • Profile: ชื่อที่แสดง, อีเมล, ตั้งค่าเสียงสัญญาณเตือน (เปิด/ปิด), ตั้งค่าแจ้งเตือนกินน้ำ, สลับภาษา TH/EN, Logout
+
+6. แผนผังหน้าจอและ User Flow (Screen Map)
+    หน้าจอหลัก:
+    1) Splash / Welcome (Canva: ไม่ใช้ช่อง password — จำกัดใน Canva AI Code)
+    2) Home / Today
+    3) Programs List
+    4) Create / Edit Program
+    5) Day Schedule
+    6) Active Workout — Interval Mode
+    7) Active Workout — Reps & Sets Mode
+    8) Workout Complete / Summary
+    9) History
+    10) Profile / Settings
+
+    Flow สั้น ๆ:
+    Splash/Welcome → Home → (Programs | Day Schedule | History | Profile)
+    Programs → Create/Edit Program
+    Home หรือ Day Schedule → Active Workout (Interval หรือ Reps & Sets) → Summary → History
+
+7. โมเดลข้อมูลสรุป (Data Model Overview)
+    • User: id, email, passwordHash, displayName, beepEnabled, locale (th|en), waterReminderEnabled, waterReminderIntervalMinutes
+      + audit: create_date, create_by, update_date, update_by, is_delete
+    • Program / ExerciseStep / ProgramDay / WorkoutSession: เช่นเดียวกันมี audit + soft delete (is_delete)
+    • Query ดึงเฉพาะ field ที่ใช้ผ่าน Prisma `select` (ไม่ดึงทั้งแถวแบบ SELECT *)
+
+8. ขอบเขต MVP (MVP Scope)
+    รวมใน v1:
+    • Dual-Mode Workout Engine (Interval + Reps & Sets)
+    • Visual Exercise Guidance (รูปจาก Firebase Storage)
+    • Screen Wake Lock + Audio Beeps
+    • CRUD Program + Day Schedule
+    • Auth Email/Password + Profile พื้นฐาน
+    • History / Summary หลังจบเซสชัน
+    • i18n Thai / English
+    • Hydration Reminder (Browser Notification ตามช่วงเวลา ทั้งวัน ตอนเปิดแอป)
+    ลำดับพัฒนาปัจจุบัน: Frontend (prese-set-fn) + Backend (prese-set-bn) — ต่อ API เข้า Next.js ต่อไป
+    โครงสร้างโปรเจกต์:
+    • prese-set-fn = Next.js Frontend
+    • prese-set-bn = Nest.js Backend (Prisma + PostgreSQL, พอร์ต 3001, prefix /api)
+    นอก MVP (อนาคต):
+    • Native Application ลง Play Store
+    • Admin UI สำหรับจัดการ media library รวมศูนย์
+    • Social / sharing / coach mode
+    • Push notification นอกแท็บ (Service Worker / background)
+
+9. ชุดคำสั่ง Canva AI Code (UX/UI Prompts)
+    วิธีใช้:
+    1) คัดลอก Design System ด้านล่าง แล้ววางนำหน้าทุก prompt
+    2) แนะนำเริ่มจาก "Showcase Prompt" (รวม 9 หน้า ไม่รวม Login/password) — Canva AI Code จำกัดช่อง password
+    3) ถ้าต้องการทีละหน้า ให้ใช้ Screen 1–10 ด้านล่าง
+    4) วางที่ https://www.canva.com/ai/code
+    สไตล์: Athletic High-Contrast — ตัวเลขเวลาใหญ่ อ่านง่ายตอนออกกำลัง โทนเข้ม/คอนทราสต์สูง
+    หมายเหตุ: หน้า Login จริง (email+password) ทำในโค้ด Next.js เอง — ใน Canva ใช้ Splash/Welcome แทน
+
+    ----------------------------------------
+    Design System (shared — English, paste before each screen prompt)
+    ----------------------------------------
+"""
+PaceSet design system for all screens:
+- Product: PaceSet, a mobile web app for workout pacing (interval timer + reps/sets)
+- Frame: mobile screens 390x844, portrait, edge-to-edge
+- Style: Athletic High-Contrast — near-black / charcoal background (#0B0D0F), surfaces slightly elevated (#15181C), primary accent lime/electric yellow (#D6FF3A), secondary text muted gray (#9AA0A6), danger/rest accent warm red-orange (#FF5A3D)
+- Typography: bold condensed athletic sans for timer numerals (very large, high legibility); clean sans for labels; strong hierarchy; brand name "PaceSet" must be visually dominant on brand/welcome screens
+- Layout: mobile-first, one primary CTA per screen, minimal chrome, generous spacing around the timer; no card clutter on timer screens; no floating badge stickers overlaid on hero/timer media
+- Avoid: purple/indigo gradients, soft cream paper themes, broadsheet dense columns, multi-layer soft shadows, rounded-full pill clusters, emoji decoration
+- CRITICAL Canva restriction: NEVER include password fields, passcode inputs, or credential-entry forms. Auth UI is out of scope for Canva mockups.
+- Output: production-ready mobile UI mockup suitable for Canva AI Code (HTML/CSS), dark athletic look, high contrast, readable outdoors
+"""
+
+    ----------------------------------------
+    RECOMMENDED — Showcase: 9 screens in one scrollable page
+    ----------------------------------------
+    หน้า: PaceSet Mobile Showcase (9 screens)
+    ใช้ทำ: สร้างทั้ง 9 หน้า (ไม่รวม Login/password) ในหน้าเดียวเลื่อนดูได้ เพื่อให้โทนดีไซน์สม่ำเสมอ
+    Prompt (English — copy ไป Canva AI Code):
+"""
+Using the PaceSet Athletic High-Contrast design system above, build ONE scrollable mobile showcase page that stacks 9 phone frames (each ~390x844) vertically with a small label above each frame. Do NOT include any login, password, or credential fields.
+
+Frame order and contents:
+
+1) Splash / Welcome
+- Huge brand wordmark "PaceSet"
+- Line: "Control your pace. Own every set."
+- Primary CTA "Start Training" (lime)
+- Text link "Continue as guest" (no password, no email form)
+- Dark atmospheric background; one composition only
+
+2) Home / Today
+- Top bar: PaceSet + profile icon
+- Title "Today"
+- Featured workout: "HIIT Burn 20", chip "Interval", "18 min"
+- Huge CTA "Start Workout"
+- Bottom nav: Home, Programs, Schedule, History, Profile
+
+3) Programs List
+- Header "Programs"
+- List rows: Sprint Intervals, Squat Strength, Core Circuit (mode + step count)
+- Lime button "New Program"
+
+4) Create / Edit Program
+- Header "Edit Program" + Save
+- Program name field
+- Toggle: Interval | Reps & Sets
+- Ordered steps with params + media thumbnail placeholders
+- "Add Step" button
+
+5) Day Schedule
+- Header "Weekly Schedule"
+- Day selector Mon–Sun (lime selected)
+- Assigned program panel or empty "No program assigned"
+- "Assign Program" button
+
+6) Active Workout — Interval Mode
+- Phase "WORK" in lime
+- Massive timer 00:15
+- "High Knees" + "Round 3 / 8"
+- Full-width exercise guidance visual (not a card)
+- Pause / Skip / Stop + thin session progress bar
+
+7) Active Workout — Reps & Sets Mode
+- Title "Squat"
+- Oversized "SET 2 / 4" and "7 REPS"
+- Rest variation hint: large "REST 00:45" in warm red-orange
+- CTA "Complete Set"; secondary Pause / Skip Rest
+
+8) Workout Complete / Summary
+- Headline "Session Complete"
+- Results: total time, mode, rounds/sets, program name
+- CTA "Save & Done"; secondary "Back to Home"
+
+9) History
+- Header "History"
+- 3–5 chronological session rows (date, program, mode, duration, completed)
+
+Exactly these 9 frames only (Welcome → Home → Programs → Edit Program → Day Schedule → Interval Active → Reps Active → Summary → History).
+Profile/Settings is a separate single-screen prompt (Screen 10) if needed later.
+Consistent Athletic High-Contrast styling across all frames. No purple. No password fields. No floating badges on timers.
+"""
+
+    ----------------------------------------
+    Screen 1 — Splash / Welcome (no password)
+    ----------------------------------------
+    หน้า: Splash / Welcome
+    ใช้ทำ: หน้าต้อนรับเน้นแบรนด์ PaceSet (ไม่มีช่อง password — จำกัดใน Canva)
+    Prompt (English — copy ไป Canva AI Code):
+"""
+Using the PaceSet Athletic High-Contrast design system above, generate a single mobile Splash / Welcome screen (390x844).
+Purpose: brand entry into the app. Do NOT include password fields, email login forms, or any credential inputs.
+UI elements:
+- Large brand wordmark "PaceSet" as the hero visual signal (not just nav text)
+- Short supporting line: "Control your pace. Own every set."
+- Primary CTA button "Start Training" in lime accent
+- Secondary text link "Continue as guest"
+- Subtle dark textured / gradient atmosphere background (not flat single color), no purple
+Keep the first viewport as one composition: brand + one headline + one short line + CTA group. No stats, no cards, no schedule widgets, no password UI.
+"""
+
+    ----------------------------------------
+    Screen 2 — Home / Today
+    ----------------------------------------
+    หน้า: Home / Today
+    ใช้ทำ: หน้าหลักแสดงโปรแกรมของวันนี้ ปุ่มเริ่มซ้อม และทางลัดไป Programs / History / Profile
+    Prompt (English — copy ไป Canva AI Code):
+"""
+Using the PaceSet Athletic High-Contrast design system, generate a single mobile Home / Today screen (390x844).
+Purpose: show today's planned program and let the user start immediately.
+UI elements:
+- Top bar with "PaceSet" and a profile avatar/icon
+- Section title "Today"
+- One featured workout block (not a card grid): program name e.g. "HIIT Burn 20", mode chip "Interval", estimated duration "18 min"
+- Huge primary CTA "Start Workout" in lime
+- Bottom nav or icon row: Home, Programs, Schedule, History, Profile — minimal, high contrast
+- Dark athletic background with subtle depth; no dashboard clutter, no stat strips, no promo badges
+- No password or login forms
+"""
+
+    ----------------------------------------
+    Screen 3 — Programs List
+    ----------------------------------------
+    หน้า: Programs List
+    ใช้ทำ: แสดงรายการโปรแกรมหลายชุดของผู้ใช้ และปุ่มสร้างโปรแกรมใหม่
+    Prompt (English — copy ไป Canva AI Code):
+"""
+Using the PaceSet Athletic High-Contrast design system, generate a single mobile Programs List screen (390x844).
+Purpose: browse and manage the user's workout programs.
+UI elements:
+- Header "Programs" with back/close affordance
+- Floating or bottom primary button "New Program" in lime
+- Vertical list of programs (simple rows, not heavy cards): name, mode (Interval or Reps & Sets), step count, last edited
+- Example items: "Sprint Intervals", "Squat Strength", "Core Circuit"
+- Empty-state friendly spacing; dark charcoal background; high-contrast list separators
+- No dashboard widgets; focus only on program management
+"""
+
+    ----------------------------------------
+    Screen 4 — Create / Edit Program
+    ----------------------------------------
+    หน้า: Create / Edit Program
+    ใช้ทำ: สร้างหรือแก้ไขโปรแกรม เลือกโหมด Interval หรือ Reps & Sets และจัดการรายการ steps
+    Prompt (English — copy ไป Canva AI Code):
+"""
+Using the PaceSet Athletic High-Contrast design system, generate a single mobile Create/Edit Program screen (390x844).
+Purpose: define a workout program and its exercise steps.
+UI elements:
+- Header "Edit Program" with Save button in lime
+- Text field: Program name
+- Segmented control / toggle: Interval | Reps & Sets
+- Ordered list of exercise steps showing: title, key params (e.g. 15s work / 5s rest OR 7 reps x 4 sets), small thumbnail placeholder for exercise media
+- Button "Add Step"
+- Dark form surfaces, high-contrast inputs, athletic sans labels
+- Keep interaction clear: one job = build the program. No unrelated promo content.
+"""
+
+    ----------------------------------------
+    Screen 5 — Day Schedule
+    ----------------------------------------
+    หน้า: Day Schedule
+    ใช้ทำ: เลือกวันในสัปดาห์แล้วผูกโปรแกรมที่จะใช้ในวันนั้น
+    Prompt (English — copy ไป Canva AI Code):
+"""
+Using the PaceSet Athletic High-Contrast design system, generate a single mobile Day Schedule screen (390x844).
+Purpose: assign which program runs on which day of the week.
+UI elements:
+- Header "Weekly Schedule"
+- Horizontal day selector: Mon Tue Wed Thu Fri Sat Sun (high contrast selected state in lime)
+- Selected day panel showing assigned program name + mode, or empty state "No program assigned"
+- Button "Assign Program" / "Change Program"
+- Short helper text: "One program per day. Multiple programs available in your library."
+- Clean single-purpose layout; dark athletic look; no calendar clutter or event listing chrome
+"""
+
+    ----------------------------------------
+    Screen 6 — Active Workout — Interval Mode
+    ----------------------------------------
+    หน้า: Active Workout — Interval Mode
+    ใช้ทำ: หน้าจับเวลา Interval ตัวเลขใหญ่ แสดง Work/Rest, progress, Pause/Skip และภาพท่าทาง
+    Prompt (English — copy ไป Canva AI Code):
+"""
+Using the PaceSet Athletic High-Contrast design system, generate a single mobile Active Workout — Interval Mode screen (390x844).
+Purpose: run a live interval timer that is readable mid-workout.
+UI elements (priority = timer readability):
+- Phase label large: "WORK" in lime OR "REST" in warm red-orange
+- Massive countdown numerals centered (e.g. 00:15) — dominant visual, condensed athletic type, extremely high contrast
+- Subline: exercise name e.g. "High Knees" + round progress "Round 3 / 8"
+- Mid area: exercise guidance image/illustration zone (full-width visual plane, not inset card)
+- Controls: Pause (primary), Skip (secondary), Stop (subtle)
+- Thin progress bar for overall session
+- Screen should feel full-bleed and focused; NO floating badges, NO cards in the hero timer zone, NO stats strip clutter
+- Assume Screen Wake Lock + audio beep on phase change (visual state only; no need to animate sound)
+"""
+
+    ----------------------------------------
+    Screen 7 — Active Workout — Reps & Sets Mode
+    ----------------------------------------
+    หน้า: Active Workout — Reps & Sets Mode
+    ใช้ทำ: แสดงรอบ/เซ็ตปัจจุบัน นับถอยหลังพักระหว่างเซ็ต และปุ่ม Complete Set
+    Prompt (English — copy ไป Canva AI Code):
+"""
+Using the PaceSet Athletic High-Contrast design system, generate a single mobile Active Workout — Reps & Sets Mode screen (390x844).
+Purpose: guide the user through reps and sets with optional rest countdown.
+UI elements:
+- Exercise title large e.g. "Squat"
+- Dominant display: current set "SET 2 / 4" and target reps "7 REPS" in oversized type
+- Secondary state panel for rest between sets: large rest countdown e.g. 00:45 with label "REST" in warm red-orange (show rest as the active focus variation)
+- Exercise media guidance area behind/above controls (edge-aware, not a small card)
+- Primary CTA: "Complete Set" in lime
+- Secondary: Pause, Skip Rest
+- High-contrast dark athletic UI optimized for glancing while training; no card clutter; one clear action
+"""
+
+    ----------------------------------------
+    Screen 8 — Workout Complete / Summary
+    ----------------------------------------
+    หน้า: Workout Complete / Summary
+    ใช้ทำ: สรุปหลังจบเซสชัน แสดงเวลาที่ใช้และผลลัพธ์ พร้อมปุ่มบันทึก/เสร็จสิ้น
+    Prompt (English — copy ไป Canva AI Code):
+"""
+Using the PaceSet Athletic High-Contrast design system, generate a single mobile Workout Complete / Summary screen (390x844).
+Purpose: celebrate completion and confirm save to history.
+UI elements:
+- Large headline "Session Complete"
+- Brand mark PaceSet subtle but present
+- Key results in a simple high-contrast layout (not a dense dashboard): Total time, Mode, Rounds/Sets completed, Program name
+- Primary CTA "Save & Done" in lime
+- Secondary "Back to Home"
+- Dark charcoal background with a subtle athletic accent glow using lime sparingly (no purple neon)
+- One composition, one job: close the workout loop
+"""
+
+    ----------------------------------------
+    Screen 9 — History
+    ----------------------------------------
+    หน้า: History
+    ใช้ทำ: รายการเซสชันออกกำลังกายย้อนหลัง
+    Prompt (English — copy ไป Canva AI Code):
+"""
+Using the PaceSet Athletic High-Contrast design system, generate a single mobile History screen (390x844).
+Purpose: review past workout sessions.
+UI elements:
+- Header "History"
+- Chronological list rows: date/time, program name, mode, duration, completed status
+- Example rows for 3–5 past sessions
+- Tap affordance implied on each row
+- Optional empty state: "No sessions yet — start your first pace."
+- Dark athletic list UI, high contrast dividers, minimal chrome; no analytics charts in MVP
+"""
+
+    ----------------------------------------
+    Screen 10 — Profile / Settings
+    ----------------------------------------
+    หน้า: Profile / Settings
+    ใช้ทำ: ดู/แก้ข้อมูลผู้ใช้ ตั้งค่าเสียงเตือน และ Logout (ไม่มีช่อง password)
+    Prompt (English — copy ไป Canva AI Code):
+"""
+Using the PaceSet Athletic High-Contrast design system, generate a single mobile Profile / Settings screen (390x844).
+Purpose: manage account basics and app preferences. Do NOT include password change forms or credential inputs.
+UI elements:
+- Header "Profile"
+- Display name, email shown as plain text (not a password field)
+- Toggle: "Audio beeps on phase change" (on by default)
+- Short note about Screen Wake Lock during workouts (informational, not a clutter block)
+- Destructive/secondary button "Log out"
+- Dark charcoal surfaces, lime accent only on interactive focus states
+- Single-purpose settings screen; no marketing modules; no password UI
+"""

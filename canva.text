@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+ <head><script>window["__codeletBootstrap__"]=JSON.parse('{"A":"A","B":"20260731-05-8d4b1dd","C":{"Abril Fatface":"YACgEZbkUVE,0","Alfa Slab One":"YACgEYS9sJU,0","Anton":"YACgEcYqQ-A,0","Archivo":"YAHO2-t-jNE,0","Arial":"YAGyDvJ_4Ts,0","Bebas Neue":"YACgESME5ew,0","Broken Glyph":"YADZ-exUkv0,0","Canva Sans":"YAFdJjTk5UU,0","Caveat":"YALBs2ploWQ,0","Comic Sans MS":"YAHO2VMiyZo,0","Cormorant Garamond":"YAFdJhX-538,0","Courier New":"YAGzXiGs0_8,0","DM Sans":"YAD1aU3sLnI,0","DM Serif Display":"YAD1aYG82rc,0","Forum":"YACgEcnnqB4,0","Fraunces":"YAEul-FRQw4,0","Georgia":"YAGzXkO0pEM,0","Ghost Mono":"YAHO2EIdDP0,0","Helvetica Neue":"YAFcf6CtJfI,0","Impact":"YAFcfnjI7Vk,0","Inter":"YAFdJvSyp_k,3","Iowan Old Style":"YAGNIFa8j9o,0","Jacques Francois":"YAHO2a5g66Q,0","JetBrains Mono":"YADy3sAhvXQ,0","Oleo Script":"YACgEQQ14jI,0","Playfair Display":"YAFdJhem5V8,1","Poppins":"YAE5fPSY9qM,0","Press Start 2P":"YAFyGr-8pmQ,0","Source Sans 3":"YAG4lO1Mj10,0","Space Grotesk":"YAHO2sjPCSM,0","Times New Roman":"YAGzXW3gftg,0","Times":"YAGzXW3gftg,0","Trebuchet MS":"YAFcfrglpVA,0","Verdana":"YAGzXTctYtQ,0","Work Sans":"YAGXhLOKv44,0","Yellowtail":"YACgEYG4kG4,0"}}');</script><script src="/_sdk/1c274b9c2bdd3519.telemetry_sdk.js" integrity="sha512-QvDGWM2/VIwB7KXA4cwqkIBlxCdJGd0uO9ksM8wsqNKNiFgewrwdYlGY9ioCTg42Djm5Sw7uha/WH60UzzKOhQ=="></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PaceSet Mobile Showcase</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700;900&amp;family=Barlow+Condensed:wght@600;700;800;900&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <style>
+        body { font-family: 'Fira Sans', sans-serif; }
+        .timer-font { font-family: 'Barlow Condensed', sans-serif; }
+        .phone-frame {
+            width: 390px;
+            height: 844px;
+            border-radius: 40px;
+            overflow: hidden;
+            position: relative;
+            border: 3px solid #2a2d32;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+        }
+        .screen-inner {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+        .lime { color: #D6FF3A; }
+        .bg-lime { background: #D6FF3A; }
+        .text-muted { color: #9AA0A6; }
+        .bg-surface { background: #15181C; }
+        .bg-base { background: #0B0D0F; }
+        .text-danger { color: #FF5A3D; }
+        .bg-danger { background: #FF5A3D; }
+    </style>
+  <script src="/_sdk/63b5ed99e5b990a7.data_sdk.js" type="text/javascript" integrity="sha512-fLUGE0rNLPgXS9olxs6QORKg6Diqpi0PSKoNistdAaH/GruBuq5/XhrOdSOcKfqcIIRQ1KvO66J1vCBvvLj4rA=="></script>
+  <script src="/_sdk/797e0a7e8af7c7f8.resizing_sdk.js" type="text/javascript" integrity="sha512-giNZj5eBnASPpYcJXEVOn6FguxFDnaH+gnf5nbRfUgfRDqtOdV+5Dna/CwvXiPeR//Plhtbt32CML3VF4+oCLw=="></script>
+ </head>
+ <body data-template-id="__page-root" class="min-h-screen w-full">
+  <main class="w-full py-16 px-4 flex flex-col items-center gap-16">
+   <header class="text-center mb-8">
+    <h1 data-template-id="showcase-title" class="canva-text timer-font text-4xl font-black uppercase tracking-tight"></h1>
+    <p data-template-id="showcase-subtitle" class="canva-text mt-2 text-lg"></p>
+   </header><!-- Screen 1: Splash -->
+   <section class="flex flex-col items-center"><span data-template-id="label-1" class="canva-text text-sm font-medium uppercase tracking-widest mb-3"></span>
+    <div class="phone-frame bg-base">
+     <div class="screen-inner flex flex-col items-center justify-center px-10 text-center" style="background: radial-gradient(ellipse at 50% 80%, #1a2010 0%, #0B0D0F 70%);">
+      <div class="timer-font text-6xl font-black text-white tracking-tight mb-2">
+       Pace<span class="lime">Set</span>
+      </div>
+      <p data-template-id="splash-tagline" class="canva-text text-base mt-4 mb-10"></p><button data-template-id="splash-cta" class="canva-button w-full py-4 rounded-xl text-black font-bold text-lg bg-lime"></button> <a data-template-id="splash-guest" class="canva-link mt-5 text-sm underline"></a>
+     </div>
+    </div>
+   </section><!-- Screen 2: Home -->
+   <section class="flex flex-col items-center"><span data-template-id="label-2" class="canva-text text-sm font-medium uppercase tracking-widest mb-3"></span>
+    <div class="phone-frame bg-base">
+     <div class="screen-inner flex flex-col">
+      <div class="flex items-center justify-between px-6 pt-14 pb-4"><span class="timer-font text-xl font-bold text-white">Pace<span class="lime">Set</span></span>
+       <div class="w-9 h-9 rounded-full bg-surface flex items-center justify-center">
+        <i data-lucide="user" class="w-5 h-5 text-white"></i>
+       </div>
+      </div>
+      <div class="px-6 pt-6">
+       <h2 data-template-id="home-title" class="canva-text text-2xl font-bold text-white mb-6"></h2>
+       <div class="bg-surface rounded-2xl p-6">
+        <div class="flex items-center gap-2 mb-2"><span class="text-xs font-semibold lime bg-[#1a2a0a] px-2 py-0.5 rounded">Interval</span> <span class="text-muted text-xs">18 min</span>
+        </div>
+        <h3 data-template-id="home-workout-name" class="canva-text text-xl font-bold text-white mb-1"></h3>
+        <p class="text-muted text-sm">High-intensity interval training</p>
+       </div><button data-template-id="home-cta" class="canva-button w-full mt-8 py-4 rounded-xl text-black font-bold text-lg bg-lime"></button>
+      </div>
+      <div class="absolute bottom-0 left-0 right-0 flex justify-around py-4 px-6 border-t border-[#222]">
+       <div class="flex flex-col items-center gap-1">
+        <i data-lucide="home" class="w-5 h-5 lime"></i><span class="text-[10px] lime">Home</span>
+       </div>
+       <div class="flex flex-col items-center gap-1">
+        <i data-lucide="layers" class="w-5 h-5 text-muted"></i><span class="text-[10px] text-muted">Programs</span>
+       </div>
+       <div class="flex flex-col items-center gap-1">
+        <i data-lucide="calendar" class="w-5 h-5 text-muted"></i><span class="text-[10px] text-muted">Schedule</span>
+       </div>
+       <div class="flex flex-col items-center gap-1">
+        <i data-lucide="clock" class="w-5 h-5 text-muted"></i><span class="text-[10px] text-muted">History</span>
+       </div>
+       <div class="flex flex-col items-center gap-1">
+        <i data-lucide="user" class="w-5 h-5 text-muted"></i><span class="text-[10px] text-muted">Profile</span>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Screen 3: Programs -->
+   <section class="flex flex-col items-center"><span data-template-id="label-3" class="canva-text text-sm font-medium uppercase tracking-widest mb-3"></span>
+    <div class="phone-frame bg-base">
+     <div class="screen-inner flex flex-col">
+      <div class="px-6 pt-14 pb-4 flex items-center gap-3"><i data-lucide="chevron-left" class="w-6 h-6 text-white"></i>
+       <h2 data-template-id="programs-title" class="canva-text text-xl font-bold text-white"></h2>
+      </div>
+      <div class="px-6 flex-1 space-y-3">
+       <div class="bg-surface rounded-xl p-4 flex justify-between items-center">
+        <div>
+         <p class="text-white font-semibold">Sprint Intervals</p>
+         <p class="text-muted text-xs mt-0.5">Interval · 6 steps</p>
+        </div><i data-lucide="chevron-right" class="w-5 h-5 text-muted"></i>
+       </div>
+       <div class="bg-surface rounded-xl p-4 flex justify-between items-center">
+        <div>
+         <p class="text-white font-semibold">Squat Strength</p>
+         <p class="text-muted text-xs mt-0.5">Reps &amp; Sets · 4 steps</p>
+        </div><i data-lucide="chevron-right" class="w-5 h-5 text-muted"></i>
+       </div>
+       <div class="bg-surface rounded-xl p-4 flex justify-between items-center">
+        <div>
+         <p class="text-white font-semibold">Core Circuit</p>
+         <p class="text-muted text-xs mt-0.5">Interval · 5 steps</p>
+        </div><i data-lucide="chevron-right" class="w-5 h-5 text-muted"></i>
+       </div>
+      </div>
+      <div class="px-6 pb-10 pt-4"><button data-template-id="programs-cta" class="canva-button w-full py-4 rounded-xl text-black font-bold bg-lime"></button>
+      </div>
+     </div>
+    </div>
+   </section><!-- Screen 4: Edit Program -->
+   <section class="flex flex-col items-center"><span data-template-id="label-4" class="canva-text text-sm font-medium uppercase tracking-widest mb-3"></span>
+    <div class="phone-frame bg-base">
+     <div class="screen-inner flex flex-col">
+      <div class="px-6 pt-14 pb-4 flex items-center justify-between">
+       <div class="flex items-center gap-3">
+        <i data-lucide="chevron-left" class="w-6 h-6 text-white"></i>
+        <h2 data-template-id="edit-title" class="canva-text text-xl font-bold text-white"></h2>
+       </div><button class="lime font-bold text-sm">Save</button>
+      </div>
+      <div class="px-6 flex-1 space-y-5 overflow-y-auto pb-20">
+       <div><label class="text-muted text-xs block mb-1">Program name</label> <input type="text" value="HIIT Burn 20" class="w-full bg-surface text-white rounded-lg px-4 py-3 border border-[#2a2d32] focus:border-[#D6FF3A] outline-none">
+       </div>
+       <div class="flex bg-surface rounded-lg overflow-hidden"><button class="flex-1 py-2.5 text-sm font-bold text-black bg-lime">Interval</button> <button class="flex-1 py-2.5 text-sm font-medium text-muted">Reps &amp; Sets</button>
+       </div>
+       <div class="space-y-3">
+        <div class="bg-surface rounded-xl p-4 flex items-center gap-3"><span class="text-muted text-xs font-bold">1</span>
+         <div class="w-10 h-10 rounded-lg bg-[#222] flex items-center justify-center">
+          <i data-lucide="image" class="w-5 h-5 text-muted"></i>
+         </div>
+         <div class="flex-1">
+          <p class="text-white text-sm font-medium">High Knees</p>
+          <p class="text-muted text-xs">15s work / 5s rest</p>
+         </div>
+        </div>
+        <div class="bg-surface rounded-xl p-4 flex items-center gap-3"><span class="text-muted text-xs font-bold">2</span>
+         <div class="w-10 h-10 rounded-lg bg-[#222] flex items-center justify-center">
+          <i data-lucide="image" class="w-5 h-5 text-muted"></i>
+         </div>
+         <div class="flex-1">
+          <p class="text-white text-sm font-medium">Burpees</p>
+          <p class="text-muted text-xs">20s work / 10s rest</p>
+         </div>
+        </div>
+        <div class="bg-surface rounded-xl p-4 flex items-center gap-3"><span class="text-muted text-xs font-bold">3</span>
+         <div class="w-10 h-10 rounded-lg bg-[#222] flex items-center justify-center">
+          <i data-lucide="image" class="w-5 h-5 text-muted"></i>
+         </div>
+         <div class="flex-1">
+          <p class="text-white text-sm font-medium">Mountain Climbers</p>
+          <p class="text-muted text-xs">15s work / 5s rest</p>
+         </div>
+        </div>
+       </div><button class="w-full py-3 rounded-xl border border-dashed border-[#444] text-muted text-sm font-medium">+ Add Step</button>
+      </div>
+     </div>
+    </div>
+   </section><!-- Screen 5: Day Schedule -->
+   <section class="flex flex-col items-center"><span data-template-id="label-5" class="canva-text text-sm font-medium uppercase tracking-widest mb-3"></span>
+    <div class="phone-frame bg-base">
+     <div class="screen-inner flex flex-col">
+      <div class="px-6 pt-14 pb-4">
+       <h2 data-template-id="schedule-title" class="canva-text text-xl font-bold text-white"></h2>
+      </div>
+      <div class="px-6">
+       <div class="flex justify-between mb-8"><span class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-muted">M</span> <span class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-muted">T</span> <span class="w-10 h-10 rounded-full bg-lime flex items-center justify-center text-xs font-bold text-black">W</span> <span class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-muted">T</span> <span class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-muted">F</span> <span class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-muted">S</span> <span class="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-muted">S</span>
+       </div>
+       <div class="bg-surface rounded-2xl p-6">
+        <p class="text-muted text-xs uppercase tracking-wide mb-2">Wednesday</p>
+        <p class="text-white font-bold text-lg">HIIT Burn 20</p>
+        <p class="text-muted text-sm mt-1">Interval · 18 min</p>
+       </div><button data-template-id="schedule-cta" class="canva-button w-full mt-6 py-4 rounded-xl text-black font-bold bg-lime"></button>
+       <p class="text-muted text-xs text-center mt-4">One program per day. Multiple programs available in your library.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- Screen 6: Interval Active -->
+   <section class="flex flex-col items-center"><span data-template-id="label-6" class="canva-text text-sm font-medium uppercase tracking-widest mb-3"></span>
+    <div class="phone-frame bg-base">
+     <div class="screen-inner flex flex-col relative"><img data-template-id="interval-exercise-img" class="canva-image absolute inset-0 w-full h-full object-cover opacity-30" loading="lazy">
+      <div class="relative z-10 flex flex-col h-full">
+       <div class="px-6 pt-14 text-center"><span data-template-id="interval-phase" class="canva-text timer-font text-3xl font-black uppercase tracking-wider"></span>
+       </div>
+       <div class="flex-1 flex flex-col items-center justify-center">
+        <div class="timer-font text-[120px] leading-none font-black text-white">
+         00:15
+        </div>
+        <p class="text-white text-lg font-medium mt-4">High Knees</p>
+        <p class="text-muted text-sm mt-1">Round 3 / 8</p>
+       </div>
+       <div class="px-6 pb-6">
+        <div class="w-full h-1 bg-[#222] rounded-full mb-6">
+         <div class="h-1 bg-lime rounded-full" style="width:37%"></div>
+        </div>
+        <div class="flex justify-center gap-6"><button class="w-14 h-14 rounded-full bg-surface flex items-center justify-center"><i data-lucide="square" class="w-5 h-5 text-muted"></i></button> <button class="w-16 h-16 rounded-full bg-lime flex items-center justify-center"><i data-lucide="pause" class="w-7 h-7 text-black"></i></button> <button class="w-14 h-14 rounded-full bg-surface flex items-center justify-center"><i data-lucide="skip-forward" class="w-5 h-5 text-muted"></i></button>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Screen 7: Reps Active -->
+   <section class="flex flex-col items-center"><span data-template-id="label-7" class="canva-text text-sm font-medium uppercase tracking-widest mb-3"></span>
+    <div class="phone-frame bg-base">
+     <div class="screen-inner flex flex-col relative"><img data-template-id="reps-exercise-img" class="canva-image absolute inset-0 w-full h-full object-cover opacity-20" loading="lazy">
+      <div class="relative z-10 flex flex-col h-full">
+       <div class="px-6 pt-14 text-center">
+        <p class="text-white text-xl font-bold">Squat</p>
+       </div>
+       <div class="flex-1 flex flex-col items-center justify-center text-center px-6">
+        <div class="timer-font text-5xl font-black text-white mb-2">
+         SET 2 / 4
+        </div>
+        <div class="timer-font text-7xl font-black text-white mb-8">
+         7 REPS
+        </div>
+        <div class="bg-[#2a1510] rounded-2xl px-8 py-4 inline-block">
+         <p class="text-xs uppercase tracking-wider text-danger font-bold mb-1">REST</p>
+         <div class="timer-font text-5xl font-black text-danger">
+          00:45
+         </div>
+        </div>
+       </div>
+       <div class="px-6 pb-8 space-y-3"><button data-template-id="reps-cta" class="canva-button w-full py-4 rounded-xl text-black font-bold text-lg bg-lime"></button>
+        <div class="flex justify-center gap-4"><button class="text-muted text-sm font-medium">Pause</button> <button class="text-muted text-sm font-medium">Skip Rest</button>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- Screen 8: Summary -->
+   <section class="flex flex-col items-center"><span data-template-id="label-8" class="canva-text text-sm font-medium uppercase tracking-widest mb-3"></span>
+    <div class="phone-frame bg-base">
+     <div class="screen-inner flex flex-col items-center justify-center px-8 text-center" style="background: radial-gradient(ellipse at 50% 30%, #1a2a0a 0%, #0B0D0F 60%);">
+      <div class="timer-font text-sm font-bold text-muted uppercase tracking-widest mb-2">
+       Pace<span class="lime">Set</span>
+      </div>
+      <h2 data-template-id="summary-headline" class="canva-text timer-font text-4xl font-black text-white mb-10"></h2>
+      <div class="w-full space-y-4 text-left bg-surface rounded-2xl p-6">
+       <div class="flex justify-between">
+        <span class="text-muted text-sm">Total Time</span><span class="text-white font-bold">18:42</span>
+       </div>
+       <div class="flex justify-between">
+        <span class="text-muted text-sm">Mode</span><span class="text-white font-bold">Interval</span>
+       </div>
+       <div class="flex justify-between">
+        <span class="text-muted text-sm">Rounds</span><span class="text-white font-bold">8 / 8</span>
+       </div>
+       <div class="flex justify-between">
+        <span class="text-muted text-sm">Program</span><span class="text-white font-bold">HIIT Burn 20</span>
+       </div>
+      </div><button data-template-id="summary-cta" class="canva-button w-full mt-8 py-4 rounded-xl text-black font-bold text-lg bg-lime"></button> <button data-template-id="summary-secondary" class="canva-text mt-4 text-sm underline"></button>
+     </div>
+    </div>
+   </section><!-- Screen 9: History -->
+   <section class="flex flex-col items-center"><span data-template-id="label-9" class="canva-text text-sm font-medium uppercase tracking-widest mb-3"></span>
+    <div class="phone-frame bg-base">
+     <div class="screen-inner flex flex-col">
+      <div class="px-6 pt-14 pb-4">
+       <h2 data-template-id="history-title" class="canva-text text-xl font-bold text-white"></h2>
+      </div>
+      <div class="px-6 flex-1 space-y-3">
+       <div class="bg-surface rounded-xl p-4">
+        <div class="flex justify-between items-start">
+         <div>
+          <p class="text-white font-semibold text-sm">HIIT Burn 20</p>
+          <p class="text-muted text-xs mt-0.5">Interval · 18:42</p>
+         </div>
+         <div class="text-right">
+          <p class="text-muted text-xs">Aug 1</p><span class="text-xs lime font-medium">Completed</span>
+         </div>
+        </div>
+       </div>
+       <div class="bg-surface rounded-xl p-4">
+        <div class="flex justify-between items-start">
+         <div>
+          <p class="text-white font-semibold text-sm">Squat Strength</p>
+          <p class="text-muted text-xs mt-0.5">Reps &amp; Sets · 22:10</p>
+         </div>
+         <div class="text-right">
+          <p class="text-muted text-xs">Jul 30</p><span class="text-xs lime font-medium">Completed</span>
+         </div>
+        </div>
+       </div>
+       <div class="bg-surface rounded-xl p-4">
+        <div class="flex justify-between items-start">
+         <div>
+          <p class="text-white font-semibold text-sm">Core Circuit</p>
+          <p class="text-muted text-xs mt-0.5">Interval · 12:05</p>
+         </div>
+         <div class="text-right">
+          <p class="text-muted text-xs">Jul 28</p><span class="text-xs lime font-medium">Completed</span>
+         </div>
+        </div>
+       </div>
+       <div class="bg-surface rounded-xl p-4">
+        <div class="flex justify-between items-start">
+         <div>
+          <p class="text-white font-semibold text-sm">Sprint Intervals</p>
+          <p class="text-muted text-xs mt-0.5">Interval · 15:30</p>
+         </div>
+         <div class="text-right">
+          <p class="text-muted text-xs">Jul 26</p><span class="text-xs text-danger font-medium">Stopped</span>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section>
+  </main>
+  <script src="/_sdk/afc2d393c2ac926b.editing_sdk.js" integrity="sha512-Ue7lZoRec1IGq7j3H/38aWZalTxanTjFGoCKdWTFUGFJwCO6Pinekpb6vP1nEQ3ZFuEOglmaFKfrRMeLheTxnw=="></script>
+  <script>
+        lucide.createIcons();
+    </script>
+ </body>
+</html>

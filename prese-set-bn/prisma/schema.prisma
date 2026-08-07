@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProgramMode {
+  INTERVAL
+  REPS_SETS
+}
+
+enum Locale {
+  en
+  th
+}
+
+model User {
+  id                           String    @id @default(cuid())
+  email                        String    @unique
+  passwordHash                 String    @map("password_hash")
+  displayName                  String    @map("display_name")
+  beepEnabled                  Boolean   @default(true) @map("beep_enabled")
+  locale                       Locale    @default(en)
+  waterReminderEnabled         Boolean   @default(false) @map("water_reminder_enabled")
+  waterReminderIntervalMinutes Int       @default(60) @map("water_reminder_interval_minutes")
+  createDate                   DateTime  @default(now()) @map("create_date")
+  createBy                     String    @map("create_by") @db.VarChar(255)
+  updateDate                   DateTime? @map("update_date")
+  updateBy                     String?   @map("update_by") @db.VarChar(255)
+  isDelete                     Boolean   @default(false) @map("is_delete")
+
+  programs Program[]
+  days     ProgramDay[]
+  sessions WorkoutSession[]
+
+  @@map("users")
+}
+
+model Program {
+  id         String      @id @default(cuid())
+  userId     String      @map("user_id")
+  name       String
+  mode       ProgramMode
+  createDate DateTime    @default(now()) @map("create_date")
+  createBy   String      @map("create_by") @db.VarChar(255)
+  updateDate DateTime?   @map("update_date")
+  updateBy   String?     @map("update_by") @db.VarChar(255)
+  isDelete   Boolean     @default(false) @map("is_delete")
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  steps    ExerciseStep[]
+  days     ProgramDay[]
+  sessions WorkoutSession[]
+
+  @@index([userId])
+  @@index([isDelete])
+  @@map("programs")
+}
+
+model ExerciseStep {
+  id                     String    @id @default(cuid())
+  programId              String    @map("program_id")
+  order                  Int
+  title                  String
+  instruction            String?
+  mediaUrl               String?   @map("media_url")
+  workSeconds            Int?      @map("work_seconds")
+  restSeconds            Int?      @map("rest_seconds")
+  rounds                 Int?
+  reps                   Int?
+  sets                   Int?
+  restBetweenSetsSeconds Int?      @map("rest_between_sets_seconds")
+  createDate             DateTime  @default(now()) @map("create_date")
+  createBy               String    @map("create_by") @db.VarChar(255)
+  updateDate             DateTime? @map("update_date")
+  updateBy               String?   @map("update_by") @db.VarChar(255)
+  isDelete               Boolean   @default(false) @map("is_delete")
+
+  program Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  @@index([programId])
+  @@map("exercise_steps")
+}
+
+model ProgramDay {
+  id         String    @id @default(cuid())
+  userId     String    @map("user_id")
+  dayOfWeek  Int       @map("day_of_week")
+  programId  String    @map("program_id")
+  createDate DateTime  @default(now()) @map("create_date")
+  createBy   String    @map("create_by") @db.VarChar(255)
+  updateDate DateTime? @map("update_date")
+  updateBy   String?   @map("update_by") @db.VarChar(255)
+  isDelete   Boolean   @default(false) @map("is_delete")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  program Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dayOfWeek])
+  @@index([userId])
+  @@map("program_days")
+}
+
+model WorkoutSession {
+  id          String      @id @default(cuid())
+  userId      String      @map("user_id")
+  programId   String?     @map("program_id")
+  mode        ProgramMode
+  startedAt   DateTime    @map("started_at")
+  endedAt     DateTime?   @map("ended_at")
+  completed   Boolean     @default(false)
+  summaryJson Json?       @map("summary_json")
+  createDate  DateTime    @default(now()) @map("create_date")
+  createBy    String      @map("create_by") @db.VarChar(255)
+  updateDate  DateTime?   @map("update_date")
+  updateBy    String?     @map("update_by") @db.VarChar(255)
+  isDelete    Boolean     @default(false) @map("is_delete")
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  program Program? @relation(fields: [programId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@map("workout_sessions")
+}

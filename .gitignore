@@ -1,0 +1,36 @@
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+*.pem
+
+# Dependencies
+node_modules/
+
+# Env / secrets — ห้ามขึ้น git
+.env
+.env.*
+!.env.example
+
+# Backend (Nest)
+prese-set-bn/dist/
+prese-set-bn/coverage/
+prese-set-bn/generated/
+
+# Frontend (Next)
+prese-set-fn/.next/
+prese-set-fn/out/
+prese-set-fn/next-env.d.ts
+
+# Leftover / cache จาก rename เก่า
+web/
+
+# Logs / debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.tsbuildinfo
+
+# Deploy
+.vercel
