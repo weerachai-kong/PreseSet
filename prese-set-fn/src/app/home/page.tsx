@@ -7,7 +7,7 @@ import { HomeHeader } from "@/components/PageHeader";
 import { PageContent } from "@/components/PageContent";
 import { PhoneShell } from "@/components/PhoneShell";
 import { programsApi, scheduleApi } from "@/lib/api";
-import { estimateProgramMinutes, inferStepKind, programModeLabel } from "@/lib/api/helpers";
+import { estimateProgramMinutes, programModeLabel } from "@/lib/api/helpers";
 import type { Program } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useLocale } from "@/lib/i18n/LocaleContext";
@@ -60,13 +60,7 @@ export default function HomePage() {
   const loading = authLoading || Boolean(token && fetchResult?.key !== token);
 
   const workoutHref = todayProgram
-    ? (() => {
-        const hasInterval = todayProgram.steps.some(
-          (s) => inferStepKind(s) === "INTERVAL" && s.workSeconds != null,
-        );
-        const base = hasInterval ? "/workout/interval" : "/workout/reps";
-        return `${base}?programId=${todayProgram.id}`;
-      })()
+    ? `/workout/interval?programId=${todayProgram.id}`
     : "/workout/interval";
 
   if (!authLoading && !token && !isGuest) {

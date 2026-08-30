@@ -8,6 +8,7 @@ import { PageLoading } from "@/components/LoginPrompt";
 import { PhoneShell } from "@/components/PhoneShell";
 import { programsApi, scheduleApi } from "@/lib/api";
 import type { Program } from "@/lib/api/types";
+import { inferStepKind, stepDetail } from "@/lib/api/helpers";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useLocale } from "@/lib/i18n/LocaleContext";
 import { useSettings } from "@/lib/settings/SettingsContext";
@@ -19,11 +20,13 @@ import {
   primeWorkoutAudio,
 } from "@/lib/workout/workoutBeeps";
 import {
-  buildIntervalTimeline,
+  buildWorkoutTimeline,
   completedSeconds,
+  firstSegmentIndexForStep,
+  lastSegmentIndexForStep,
   remainingTotalSeconds,
   totalTimelineSeconds,
-  type IntervalSegment,
+  type WorkoutSegment,
 } from "@/lib/workout/intervalTimeline";
 
 function IntervalWorkoutContent() {
@@ -39,17 +42,44 @@ function IntervalWorkoutContent() {
   const [missingProgram, setMissingProgram] = useState(false);
   const [segmentIndex, setSegmentIndex] = useState(0);
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [paused, setPaused] = useState(true);
   const [finished, setFinished] = useState(false);
+  /** Per-step segment index to resume when jumping back in the playlist. */
+  const [stepResumeIndex, setStepResumeIndex] = useState<Record<number, number>>(
+    {},
+  );
   const prevSegmentRef = useRef<number | null>(null);
   const finishedBeepRef = useRef(false);
 
   const timeline = useMemo(
-    () => (program ? buildIntervalTimeline(program.steps) : []),
+    () => (program ? buildWorkoutTimeline(program.steps) : []),
     [program],
   );
 
-  const current: IntervalSegment | null = timeline[segmentIndex] ?? null;
+  const playlist = useMemo(() => {
+    if (!program) return [];
+    return program.steps.map((step) => {
+      const kind = inferStepKind(step);
+      const firstIdx = firstSegmentIndexForStep(timeline, step.order);
+      const lastIdx = lastSegmentIndexForStep(timeline, step.order);
+      const hasTimeline = firstIdx >= 0;
+      const resumeIdx = stepResumeIndex[step.order] ?? firstIdx;
+      const isActive =
+        hasTimeline && segmentIndex >= firstIdx && segmentIndex <= lastIdx;
+      const isDone = hasTimeline && resumeIdx > lastIdx;
+      return {
+        step,
+        kind,
+        detail: stepDetail(step, kind),
+        firstIdx,
+        isActive,
+        isDone,
+        hasTimeline,
+      };
+    });
+  }, [program, timeline, segmentIndex, stepResumeIndex]);
+
+  const current: WorkoutSegment | null = timeline[segmentIndex] ?? null;
   const totalSec = totalTimelineSeconds(timeline);
   const remainingTotal = remainingTotalSeconds(timeline, segmentIndex, secondsLeft);
   const progress =
@@ -61,17 +91,71 @@ function IntervalWorkoutContent() {
         )
       : 0;
 
+  const setSegmentAt = useCallback(
+    (idx: number) => {
+      const seg = timeline[idx];
+      if (seg) {
+        setStepResumeIndex((prev) => ({
+          ...prev,
+          [seg.stepOrder]: idx,
+        }));
+      }
+      setSegmentIndex(idx);
+      setSecondsLeft(timeline[idx]?.durationSec ?? 0);
+    },
+    [timeline],
+  );
+
+  const jumpToStep = useCallback(
+    (stepOrder: number) => {
+      const first = firstSegmentIndexForStep(timeline, stepOrder);
+      const last = lastSegmentIndexForStep(timeline, stepOrder);
+      if (first < 0) return;
+
+      let idx = stepResumeIndex[stepOrder] ?? first;
+      if (idx > last) idx = first;
+
+      primeWorkoutAudio();
+      setSegmentAt(idx);
+      setFinished(false);
+    },
+    [timeline, stepResumeIndex, setSegmentAt],
+  );
+
+  const markStepCompleteIfNeeded = useCallback(
+    (idx: number) => {
+      const seg = timeline[idx];
+      if (!seg) return;
+      const last = lastSegmentIndexForStep(timeline, seg.stepOrder);
+      if (idx === last) {
+        setStepResumeIndex((prev) => ({
+          ...prev,
+          [seg.stepOrder]: last + 1,
+        }));
+      }
+    },
+    [timeline],
+  );
+
   const advanceSegment = useCallback(() => {
     setSegmentIndex((idx) => {
+      markStepCompleteIfNeeded(idx);
       const next = idx + 1;
       if (next >= timeline.length) {
         setFinished(true);
         return idx;
       }
+      const seg = timeline[next];
+      if (seg) {
+        setStepResumeIndex((prev) => ({
+          ...prev,
+          [seg.stepOrder]: next,
+        }));
+      }
       setSecondsLeft(timeline[next].durationSec);
       return next;
     });
-  }, [timeline]);
+  }, [timeline, markStepCompleteIfNeeded]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -84,6 +168,7 @@ function IntervalWorkoutContent() {
     let cancelled = false;
 
     async function loadProgram() {
+      if (!token) return;
       setLoading(true);
       setMissingProgram(false);
 
@@ -103,10 +188,12 @@ function IntervalWorkoutContent() {
         if (cancelled) return;
 
         setProgram(data);
-        const built = buildIntervalTimeline(data.steps);
+        const built = buildWorkoutTimeline(data.steps);
+        const first = built[0];
+        setStepResumeIndex(first ? { [first.stepOrder]: 0 } : {});
         setSegmentIndex(0);
-        setSecondsLeft(built[0]?.durationSec ?? 0);
-        setPaused(false);
+        setSecondsLeft(first?.durationSec ?? 0);
+        setPaused(true);
         setFinished(false);
         prevSegmentRef.current = null;
         finishedBeepRef.current = false;
@@ -189,12 +276,13 @@ function IntervalWorkoutContent() {
   const onSkip = () => {
     if (finished || timeline.length === 0) return;
     if (segmentIndex >= timeline.length - 1) {
+      markStepCompleteIfNeeded(segmentIndex);
       setFinished(true);
       return;
     }
+    markStepCompleteIfNeeded(segmentIndex);
     const next = segmentIndex + 1;
-    setSegmentIndex(next);
-    setSecondsLeft(timeline[next].durationSec);
+    setSegmentAt(next);
   };
 
   if (authLoading || loading) {
@@ -227,80 +315,149 @@ function IntervalWorkoutContent() {
   }
 
   const phaseLabel = current?.phase === "REST" ? t("rest") : t("work");
-  const roundLabel = current
-    ? `${current.round} / ${current.totalRounds}`
-    : "—";
+  const roundLabel =
+    current?.stepKind === "REPS_SETS"
+      ? `${current.round} / ${current.totalRounds} ${t("setsCount")}`
+      : current
+        ? `${current.round} / ${current.totalRounds}`
+        : "—";
 
   return (
-    <div className="flex h-full flex-col px-6 pt-10 pb-8">
-      <div className="flex flex-1 flex-col">
-        <div className="rounded-3xl bg-surface p-5 app-card">
-          <p className="truncate text-center text-xs font-bold uppercase tracking-wide text-muted">
-            {program.name}
+    <div className="flex h-full min-h-0 flex-col px-6 pt-8 pb-6">
+      <div className="shrink-0 rounded-2xl bg-surface p-4 app-card">
+        <p className="truncate text-center text-xs font-bold uppercase tracking-wide text-muted">
+          {program.name}
+        </p>
+
+        <div className="mt-3 rounded-2xl border-2 border-lime/35 bg-display px-3 py-4 text-center">
+          <span className="inline-block rounded-xl bg-lime px-3 py-1 text-xs font-bold text-white">
+            {phaseLabel}
+          </span>
+          <div className="timer-font mt-1 text-5xl font-extrabold text-accent-dark">
+            {formatClock(secondsLeft)}
+          </div>
+          <p className="mt-1 text-sm font-medium text-foreground">
+            {current?.stepTitle}
           </p>
-
-          <div className="mt-4 rounded-2xl border-2 border-lime/35 bg-display px-4 py-6 text-center">
-            <span className="inline-block rounded-xl bg-lime px-3 py-1 text-xs font-bold text-white">
-              {phaseLabel}
-            </span>
-            <div className="timer-font mt-2 text-7xl font-extrabold text-accent-dark">
-              {formatClock(secondsLeft)}
-            </div>
-            <p className="mt-2 text-base font-medium text-foreground">
-              {current?.stepTitle}
+          {current?.phase === "WORK" && current.repsLabel ? (
+            <p className="mt-0.5 text-xs font-semibold text-lime">
+              {current.repsLabel}
             </p>
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-2.5">
-            <div className="rounded-xl bg-surface-muted p-3 text-center">
-              <p className="text-base font-bold text-foreground">{roundLabel}</p>
-              <p className="text-[11px] text-muted">{t("rounds")}</p>
-            </div>
-            <div className="rounded-xl bg-surface-muted p-3 text-center">
-              <p className="text-base font-bold text-foreground">
-                {formatClock(remainingTotal)}
-              </p>
-              <p className="text-[11px] text-muted">{t("remainingTotal")}</p>
-            </div>
-          </div>
+          ) : null}
         </div>
 
-        <div className="mt-auto pt-6">
-          <div className="mb-6 h-1 w-full rounded-full bg-surface-muted">
-            <div
-              className="h-1 rounded-full bg-lime transition-[width] duration-1000 ease-linear"
-              style={{ width: `${progress}%` }}
-            />
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="rounded-xl bg-surface-muted p-2.5 text-center">
+            <p className="text-sm font-bold text-foreground">{roundLabel}</p>
+            <p className="text-[10px] text-muted">{t("rounds")}</p>
           </div>
-          <div className="flex justify-center gap-6">
-            <Link
-              href="/home"
-              className="flex h-14 w-14 items-center justify-center rounded-full bg-surface app-card"
-            >
-              <Square className="h-5 w-5 text-muted" />
-            </Link>
-            <button
-              type="button"
-              onClick={() => {
-                primeWorkoutAudio();
-                setPaused((p) => !p);
-              }}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-lime app-card"
-            >
-              {paused ? (
-                <Play className="h-7 w-7 text-white" />
-              ) : (
-                <Pause className="h-7 w-7 text-white" />
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={onSkip}
-              className="flex h-14 w-14 items-center justify-center rounded-full bg-surface app-card"
-            >
-              <SkipForward className="h-5 w-5 text-muted" />
-            </button>
+          <div className="rounded-xl bg-surface-muted p-2.5 text-center">
+            <p className="text-sm font-bold text-foreground">
+              {formatClock(remainingTotal)}
+            </p>
+            <p className="text-[10px] text-muted">{t("remainingTotal")}</p>
           </div>
+        </div>
+      </div>
+
+      <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-muted">
+          {t("workoutPlaylist")}
+        </p>
+        <ul className="space-y-2 pb-2">
+          {playlist.map(({ step, kind, detail, isActive, isDone, hasTimeline }) => (
+            <li key={step.id}>
+              <button
+                type="button"
+                disabled={!hasTimeline || isActive}
+                onClick={() => jumpToStep(step.order)}
+                className={`flex w-full items-start gap-3 rounded-xl border px-3 py-3 text-left transition-colors ${
+                  isActive
+                    ? "border-lime/50 bg-lime/10"
+                    : isDone
+                      ? "border-border bg-surface-muted/80 opacity-70"
+                      : "border-border bg-surface app-card hover:border-lime/30"
+                } disabled:cursor-default`}
+              >
+                <span
+                  className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                    isActive
+                      ? "bg-lime text-white"
+                      : isDone
+                        ? "bg-surface-muted text-muted"
+                        : "bg-surface-muted text-foreground/70"
+                  }`}
+                >
+                  {step.order}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p
+                      className={`truncate text-sm font-semibold ${
+                        isActive ? "text-foreground" : "text-foreground/90"
+                      }`}
+                    >
+                      {step.title}
+                    </p>
+                    <span className="shrink-0 rounded-full bg-surface-muted px-2 py-0.5 text-[10px] font-bold text-muted">
+                      {kind === "INTERVAL"
+                        ? t("stepModeInterval")
+                        : t("stepModeReps")}
+                    </span>
+                  </div>
+                  {detail ? (
+                    <p className="mt-0.5 truncate text-xs text-muted">{detail}</p>
+                  ) : null}
+                  <p className="mt-1 text-[10px] font-medium text-lime">
+                    {isActive
+                      ? t("workoutStepActive")
+                      : isDone
+                        ? t("workoutStepDone")
+                        : t("workoutStepUpcoming")}
+                  </p>
+                </div>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="shrink-0 pt-3">
+        <div className="mb-4 h-1 w-full rounded-full bg-surface-muted">
+          <div
+            className="h-1 rounded-full bg-lime transition-[width] duration-1000 ease-linear"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <div className="flex justify-center gap-6">
+          <Link
+            href="/home"
+            className="flex h-14 w-14 items-center justify-center rounded-full bg-surface app-card"
+          >
+            <Square className="h-5 w-5 text-muted" />
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              primeWorkoutAudio();
+              setPaused((p) => !p);
+            }}
+            className="flex h-16 w-16 items-center justify-center rounded-full bg-lime app-card"
+          >
+            {paused ? (
+              <Play className="h-7 w-7 text-white" />
+            ) : (
+              <Pause className="h-7 w-7 text-white" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={onSkip}
+            className="flex h-14 w-14 items-center justify-center rounded-full bg-surface app-card"
+            aria-label={t("skip")}
+          >
+            <SkipForward className="h-5 w-5 text-muted" />
+          </button>
         </div>
       </div>
     </div>

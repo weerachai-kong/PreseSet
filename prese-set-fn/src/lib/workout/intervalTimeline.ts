@@ -1,45 +1,86 @@
 import { inferStepKind } from "@/lib/api/helpers";
-import type { ExerciseStep } from "@/lib/api/types";
+import type { ExerciseStep, StepKind } from "@/lib/api/types";
 
 export type IntervalPhase = "WORK" | "REST";
 
-export type IntervalSegment = {
+export type WorkoutSegment = {
   phase: IntervalPhase;
   durationSec: number;
   stepTitle: string;
   stepOrder: number;
+  stepKind: StepKind;
   round: number;
   totalRounds: number;
+  /** Shown during reps work phases, e.g. "12 reps". */
+  repsLabel?: string;
 };
 
-export function buildIntervalTimeline(steps: ExerciseStep[]): IntervalSegment[] {
-  const segments: IntervalSegment[] = [];
+/** @deprecated alias */
+export type IntervalSegment = WorkoutSegment;
+
+export function buildWorkoutTimeline(steps: ExerciseStep[]): WorkoutSegment[] {
+  const segments: WorkoutSegment[] = [];
 
   for (const step of steps) {
-    if (inferStepKind(step) !== "INTERVAL" || step.workSeconds == null) continue;
+    const kind = inferStepKind(step);
 
-    const rounds = Math.max(1, step.rounds ?? 1);
-    const work = Math.max(1, step.workSeconds);
-    const rest = Math.max(0, step.restSeconds ?? 0);
+    if (kind === "INTERVAL" && step.workSeconds != null) {
+      const rounds = Math.max(1, step.rounds ?? 1);
+      const work = Math.max(1, step.workSeconds);
+      const rest = Math.max(0, step.restSeconds ?? 0);
 
-    for (let round = 1; round <= rounds; round++) {
-      segments.push({
-        phase: "WORK",
-        durationSec: work,
-        stepTitle: step.title,
-        stepOrder: step.order,
-        round,
-        totalRounds: rounds,
-      });
-      if (rest > 0) {
+      for (let round = 1; round <= rounds; round++) {
         segments.push({
-          phase: "REST",
-          durationSec: rest,
+          phase: "WORK",
+          durationSec: work,
           stepTitle: step.title,
           stepOrder: step.order,
+          stepKind: "INTERVAL",
           round,
           totalRounds: rounds,
         });
+        if (rest > 0) {
+          segments.push({
+            phase: "REST",
+            durationSec: rest,
+            stepTitle: step.title,
+            stepOrder: step.order,
+            stepKind: "INTERVAL",
+            round,
+            totalRounds: rounds,
+          });
+        }
+      }
+      continue;
+    }
+
+    if (kind === "REPS_SETS" && step.reps != null && step.sets != null) {
+      const sets = Math.max(1, step.sets);
+      const work = Math.max(1, step.workSeconds ?? 45);
+      const rest = Math.max(0, step.restBetweenSetsSeconds ?? 30);
+
+      for (let set = 1; set <= sets; set++) {
+        segments.push({
+          phase: "WORK",
+          durationSec: work,
+          stepTitle: step.title,
+          stepOrder: step.order,
+          stepKind: "REPS_SETS",
+          round: set,
+          totalRounds: sets,
+          repsLabel: `${step.reps} reps`,
+        });
+        if (set < sets && rest > 0) {
+          segments.push({
+            phase: "REST",
+            durationSec: rest,
+            stepTitle: step.title,
+            stepOrder: step.order,
+            stepKind: "REPS_SETS",
+            round: set,
+            totalRounds: sets,
+          });
+        }
       }
     }
   }
@@ -47,12 +88,34 @@ export function buildIntervalTimeline(steps: ExerciseStep[]): IntervalSegment[] 
   return segments;
 }
 
-export function totalTimelineSeconds(timeline: IntervalSegment[]): number {
+export function buildIntervalTimeline(steps: ExerciseStep[]): WorkoutSegment[] {
+  return buildWorkoutTimeline(steps);
+}
+
+export function firstSegmentIndexForStep(
+  timeline: WorkoutSegment[],
+  stepOrder: number,
+): number {
+  return timeline.findIndex((s) => s.stepOrder === stepOrder);
+}
+
+export function lastSegmentIndexForStep(
+  timeline: WorkoutSegment[],
+  stepOrder: number,
+): number {
+  let last = -1;
+  for (let i = 0; i < timeline.length; i++) {
+    if (timeline[i].stepOrder === stepOrder) last = i;
+  }
+  return last;
+}
+
+export function totalTimelineSeconds(timeline: WorkoutSegment[]): number {
   return timeline.reduce((sum, seg) => sum + seg.durationSec, 0);
 }
 
 export function remainingTotalSeconds(
-  timeline: IntervalSegment[],
+  timeline: WorkoutSegment[],
   segmentIndex: number,
   secondsLeft: number,
 ): number {
@@ -64,7 +127,7 @@ export function remainingTotalSeconds(
 }
 
 export function completedSeconds(
-  timeline: IntervalSegment[],
+  timeline: WorkoutSegment[],
   segmentIndex: number,
   secondsLeft: number,
 ): number {

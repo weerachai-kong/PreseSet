@@ -1,4 +1,4 @@
-import type { IntervalPhase } from "./intervalTimeline";
+export type WorkoutPhase = "WORK" | "REST";
 
 export const BEEP_SOUND_PRESETS = [
   "classic",
@@ -227,7 +227,7 @@ function getPresetDefinition(preset: BeepSoundPreset): PresetDefinition {
 
 /** Rapid beeps when a work or rest segment ends. */
 export function playPhaseEndBeeps(
-  endedPhase: IntervalPhase,
+  endedPhase: WorkoutPhase,
   volume = 0.18,
   preset: BeepSoundPreset = "classic",
 ) {
