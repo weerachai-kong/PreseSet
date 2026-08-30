@@ -1,21 +1,32 @@
 @import "tailwindcss";
 
+/* Design 5 — Mobile App Card View (high-contrast) */
 :root {
-  --base: #0b0d0f;
-  --surface: #15181c;
-  --lime: #d6ff3a;
-  --muted: #9aa0a6;
-  --danger: #ff5a3d;
-  --border: #2a2d32;
+  --base: #e8edf2;
+  --surface: #ffffff;
+  --surface-muted: #f1f4f8;
+  --display: #ffe8cc;
+  --lime: #f57c00;
+  --accent-dark: #bf360c;
+  --foreground: #1a2332;
+  --muted: #5a6578;
+  --danger: #d32f2f;
+  --border: #c5ced8;
+  --frame: #d8dee6;
 }
 
 @theme inline {
   --color-base: var(--base);
   --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-display: var(--display);
   --color-lime: var(--lime);
+  --color-accent-dark: var(--accent-dark);
+  --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-danger: var(--danger);
   --color-border: var(--border);
+  --color-frame: var(--frame);
   --font-sans: var(--font-fira);
   --font-timer: var(--font-barlow);
 }
@@ -26,11 +37,52 @@ body {
 }
 
 body {
-  background: #050607;
-  color: #ffffff;
+  background: var(--frame);
+  color: var(--foreground);
   font-family: var(--font-fira), sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .timer-font {
   font-family: var(--font-barlow), sans-serif;
+}
+
+.app-card {
+  border: 1px solid var(--border);
+  box-shadow:
+    0 1px 3px rgba(26, 35, 50, 0.06),
+    0 6px 20px rgba(26, 35, 50, 0.08);
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+  opacity: 0.85;
+}
+
+.app-input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  color: var(--foreground);
+  outline: none;
+}
+
+.app-input:focus {
+  border-color: var(--lime);
+  box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.15);
+}
+
+/* legacy alias */
+.card-shadow {
+  border: 1px solid var(--border);
+  box-shadow:
+    0 1px 3px rgba(26, 35, 50, 0.06),
+    0 6px 20px rgba(26, 35, 50, 0.08);
 }

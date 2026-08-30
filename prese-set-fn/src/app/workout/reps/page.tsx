@@ -9,40 +9,33 @@ export default function RepsWorkoutPage() {
 
   return (
     <PhoneShell>
-      <div className="relative flex h-full flex-col">
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            background:
-              "radial-gradient(ellipse at 50% 40%, #3a2010 0%, transparent 60%)",
-          }}
-        />
-        <div className="relative z-10 flex h-full flex-col">
-          <div className="px-6 pt-14 text-center">
-            <p className="text-xl font-bold text-white">Squat</p>
-          </div>
+      <div className="flex h-full flex-col px-6 pt-14 pb-8">
+        <div className="flex flex-1 flex-col">
+          <div className="rounded-3xl bg-surface p-5 app-card">
+            <p className="text-center text-xl font-bold text-foreground">Squat</p>
 
-          <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
-            <div className="timer-font mb-2 text-5xl font-black text-white">
-              SET 2 / 4
-            </div>
-            <div className="timer-font mb-8 text-7xl font-black text-white">
-              7 REPS
-            </div>
-            <div className="inline-block rounded-2xl bg-[#2a1510] px-8 py-4">
-              <p className="mb-1 text-xs font-bold uppercase tracking-wider text-danger">
-                {t("rest")}
-              </p>
-              <div className="timer-font text-5xl font-black text-danger">
-                00:45
+            <div className="mt-6 text-center">
+              <div className="timer-font mb-2 text-5xl font-black text-foreground">
+                SET 2 / 4
+              </div>
+              <div className="timer-font mb-6 text-7xl font-black text-accent-dark">
+                7 REPS
+              </div>
+              <div className="inline-block rounded-2xl bg-display px-8 py-4">
+                <p className="mb-1 text-xs font-bold uppercase tracking-wider text-lime">
+                  {t("rest")}
+                </p>
+                <div className="timer-font text-5xl font-black text-accent-dark">
+                  00:45
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="space-y-3 px-6 pb-8">
+          <div className="mt-auto space-y-3 pt-6">
             <Link
               href="/summary"
-              className="block w-full rounded-xl bg-lime py-4 text-center text-lg font-bold text-black"
+              className="block w-full rounded-xl bg-lime py-4 text-center text-lg font-bold text-white"
             >
               {t("completeSet")}
             </Link>

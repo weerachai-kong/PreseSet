@@ -77,19 +77,19 @@ export default function HomePage() {
     <PhoneShell showNav>
       <div className="flex h-full flex-col">
         <div className="flex items-center justify-between px-6 pt-14 pb-4">
-          <span className="timer-font text-xl font-bold text-white">
+          <span className="timer-font text-xl font-bold text-foreground">
             Pace<span className="text-lime">Set</span>
           </span>
           <Link
             href="/profile"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-surface"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-surface app-card"
           >
-            <User className="h-5 w-5 text-white" />
+            <User className="h-5 w-5 text-foreground" />
           </Link>
         </div>
 
         <div className="flex flex-1 flex-col px-6 pb-6">
-          <h2 className="mb-6 text-2xl font-bold text-white">{t("today")}</h2>
+          <h2 className="mb-6 text-2xl font-bold text-foreground">{t("today")}</h2>
 
           {loading ? (
             <div className="flex flex-1 items-center justify-center">
@@ -97,8 +97,8 @@ export default function HomePage() {
             </div>
           ) : isGuest ? (
             <div className="flex flex-1 flex-col justify-center space-y-4">
-              <div className="rounded-2xl bg-surface p-6 text-center">
-                <p className="text-base font-medium text-white">
+              <div className="rounded-2xl bg-surface p-6 app-card">
+                <p className="text-base font-medium text-foreground">
                   {t("guestHomeTitle")}
                 </p>
                 <p className="mt-2 text-sm text-muted">{t("guestHomeHint")}</p>
@@ -111,23 +111,23 @@ export default function HomePage() {
               </Link>
               <Link
                 href="/welcome"
-                className="block w-full rounded-xl bg-lime py-4 text-center text-lg font-bold text-black"
+                className="block w-full rounded-xl bg-lime py-4 text-center text-lg font-bold text-white"
               >
                 {t("signIn")}
               </Link>
             </div>
           ) : todayProgram ? (
             <>
-              <div className="rounded-2xl bg-surface p-6">
+              <div className="rounded-2xl bg-surface p-6 app-card">
                 <div className="mb-2 flex items-center gap-2">
-                  <span className="rounded bg-[#1a2a0a] px-2 py-0.5 text-xs font-semibold text-lime">
+                  <span className="rounded bg-lime/15 px-2 py-0.5 text-xs font-semibold text-lime">
                     {programModeLabel(todayProgram.mode, t)}
                   </span>
-                  <span className="text-xs text-muted">
+                  <span className="text-sm text-muted">
                     {estimateProgramMinutes(todayProgram.steps)} {t("minutes")}
                   </span>
                 </div>
-                <h3 className="mb-1 text-xl font-bold text-white">
+                <h3 className="mb-1 text-xl font-bold text-foreground">
                   {todayProgram.name}
                 </h3>
                 <p className="text-sm text-muted">
@@ -136,14 +136,14 @@ export default function HomePage() {
               </div>
               <Link
                 href={workoutHref}
-                className="mt-8 block w-full rounded-xl bg-lime py-4 text-center text-lg font-bold text-black"
+                className="mt-8 block w-full rounded-xl bg-lime py-4 text-center text-lg font-bold text-white"
               >
                 {t("startWorkout")}
               </Link>
             </>
           ) : (
             <div className="flex flex-1 flex-col justify-center">
-              <div className="rounded-2xl bg-surface p-6 text-center">
+              <div className="rounded-2xl bg-surface p-6 app-card">
                 <p className="text-sm text-muted">
                   {t("noProgramAssigned")}
                 </p>

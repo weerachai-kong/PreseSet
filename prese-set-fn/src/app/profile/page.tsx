@@ -146,7 +146,7 @@ export default function ProfilePage() {
     <PhoneShell showNav>
       <div className="flex h-full flex-col">
         <div className="px-6 pt-14 pb-4">
-          <h2 className="text-xl font-bold text-white">{t("profile")}</h2>
+          <h2 className="text-2xl font-bold text-foreground">{t("profile")}</h2>
         </div>
 
         {authLoading ? (
@@ -160,7 +160,7 @@ export default function ProfilePage() {
           ) : null}
 
           <div>
-            <label className="mb-1 block text-xs text-muted">
+            <label className="field-label">
               {t("displayName")}
             </label>
             <input
@@ -173,13 +173,13 @@ export default function ProfilePage() {
                   setDisplayNameDraft(null),
                 );
               }}
-              className="w-full rounded-lg border border-border bg-surface px-4 py-3 text-white outline-none focus:border-lime"
+              className="app-input"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs text-muted">{t("email")}</label>
-            <p className="rounded-lg bg-surface px-4 py-3 text-white">
+            <label className="field-label">{t("email")}</label>
+            <p className="rounded-lg border border-border bg-surface-muted px-4 py-3 text-base text-foreground">
               {token ? (user?.email ?? settings.email) : settings.email}
             </p>
           </div>
@@ -188,8 +188,8 @@ export default function ProfilePage() {
             onLocaleChange={(next) => syncToApi({ locale: next })}
           />
 
-          <label className="flex items-center justify-between rounded-xl bg-surface px-4 py-3">
-            <span className="pr-4 text-sm text-white">{t("audioBeeps")}</span>
+          <label className="flex items-center justify-between rounded-xl border border-border bg-surface app-card px-4 py-3">
+            <span className="pr-4 text-sm text-foreground">{t("audioBeeps")}</span>
             <input
               type="checkbox"
               checked={settings.beepEnabled}
@@ -201,13 +201,13 @@ export default function ProfilePage() {
             />
           </label>
 
-          <div className="space-y-3 rounded-xl bg-surface p-4">
+          <div className="space-y-3 rounded-xl border border-border bg-surface app-card p-4">
             <label className="flex items-center justify-between">
               <div className="pr-4">
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-medium text-foreground">
                   {t("waterReminder")}
                 </p>
-                <p className="mt-1 text-xs text-muted">{t("waterReminderDesc")}</p>
+                <p className="mt-1 text-sm text-muted">{t("waterReminderDesc")}</p>
               </div>
               <input
                 type="checkbox"
@@ -219,7 +219,7 @@ export default function ProfilePage() {
 
             {settings.waterReminderEnabled ? (
               <div>
-                <p className="mb-2 text-xs text-muted">{t("waterInterval")}</p>
+                <p className="mb-2 text-sm font-medium text-foreground/80">{t("waterInterval")}</p>
                 <div className="flex gap-2">
                   {(
                     [
@@ -239,8 +239,8 @@ export default function ProfilePage() {
                       }}
                       className={`flex-1 rounded-lg py-2 text-xs font-bold ${
                         settings.waterReminderIntervalMinutes === mins
-                          ? "bg-lime text-black"
-                          : "bg-[#222] text-muted"
+                          ? "bg-lime text-white"
+                          : "bg-surface-muted text-muted"
                       }`}
                     >
                       {t(key)}
@@ -255,7 +255,7 @@ export default function ProfilePage() {
             ) : null}
           </div>
 
-          <p className="text-xs text-muted">{t("wakeLockNote")}</p>
+          <p className="text-sm text-muted">{t("wakeLockNote")}</p>
 
           {settings.waterReminderEnabled ? (
             <div className="space-y-2">
@@ -268,11 +268,11 @@ export default function ProfilePage() {
               </button>
 
               {showTestPreview ? (
-                <div className="rounded-xl border border-lime/30 bg-[#1a2010] p-4 text-left shadow-lg">
+                <div className="rounded-xl border border-lime/30 bg-display p-4 text-left shadow-lg">
                   <p className="text-sm font-bold text-lime">
                     {t("waterNotifyTitle")}
                   </p>
-                  <p className="mt-1 text-xs text-white">{t("waterNotifyBody")}</p>
+                  <p className="mt-1 text-xs text-foreground">{t("waterNotifyBody")}</p>
                   <p className="mt-2 text-[10px] text-muted">
                     {t("waterTestSent")}
                   </p>

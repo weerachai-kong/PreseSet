@@ -18,20 +18,32 @@ export function BottomNav() {
   const { t } = useLocale();
 
   return (
-    <nav className="absolute bottom-0 left-0 right-0 flex justify-around border-t border-[#222] bg-base/95 px-4 py-3 backdrop-blur">
-      {items.map(({ href, icon: Icon, labelKey }) => {
-        const active = pathname === href || pathname.startsWith(`${href}/`);
-        return (
-          <Link
-            key={href}
-            href={href}
-            className={`flex flex-col items-center gap-1 ${active ? "text-lime" : "text-muted"}`}
-          >
-            <Icon className="h-5 w-5" />
-            <span className="text-[10px]">{t(labelKey)}</span>
-          </Link>
-        );
-      })}
+    <nav className="absolute bottom-0 left-0 right-0 border-t border-border bg-surface px-2 py-2 shadow-[0_-4px_16px_rgba(26,35,50,0.06)]">
+      <div className="flex justify-around">
+        {items.map(({ href, icon: Icon, labelKey }) => {
+          const active = pathname === href || pathname.startsWith(`${href}/`);
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex min-w-[3.5rem] flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 transition-colors ${
+                active
+                  ? "bg-lime/15 text-accent-dark"
+                  : "text-muted hover:text-foreground"
+              }`}
+            >
+              <Icon className={`h-5 w-5 ${active ? "stroke-[2.5]" : ""}`} />
+              <span
+                className={`text-[11px] leading-tight ${
+                  active ? "font-bold" : "font-medium"
+                }`}
+              >
+                {t(labelKey)}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }

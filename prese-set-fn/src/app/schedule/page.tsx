@@ -99,7 +99,7 @@ export default function SchedulePage() {
     <PhoneShell showNav>
       <div className="flex h-full flex-col">
         <div className="px-6 pt-14 pb-4">
-          <h2 className="text-xl font-bold text-white">{t("weeklySchedule")}</h2>
+          <h2 className="text-2xl font-bold text-foreground">{t("weeklySchedule")}</h2>
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col px-6">
@@ -115,10 +115,10 @@ export default function SchedulePage() {
                     key={d.key}
                     type="button"
                     onClick={() => setSelected(i)}
-                    className={`flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold ${
+                    className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold ${
                       selected === i
-                        ? "bg-lime text-black"
-                        : "text-muted"
+                        ? "bg-lime text-white shadow-sm"
+                        : "border border-border bg-surface text-foreground/65"
                     }`}
                   >
                     {d.key.replace("2", "")}
@@ -126,13 +126,13 @@ export default function SchedulePage() {
                 ))}
               </div>
 
-              <div className="rounded-2xl bg-surface p-6">
-                <p className="mb-2 text-xs uppercase tracking-wide text-muted">
+              <div className="rounded-2xl bg-surface p-6 app-card">
+                <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-foreground/70">
                   {locale === "th" ? day.labelTh : day.labelEn}
                 </p>
                 {assigned ? (
                   <>
-                    <p className="text-lg font-bold text-white">
+                    <p className="text-lg font-bold text-foreground">
                       {assigned.name}
                     </p>
                     <p className="mt-1 text-sm text-muted">
@@ -149,22 +149,22 @@ export default function SchedulePage() {
                 type="button"
                 disabled={saving || programs.length === 0}
                 onClick={() => setPickerOpen(true)}
-                className="mt-6 w-full rounded-xl bg-lime py-4 font-bold text-black disabled:opacity-50"
+                className="mt-6 w-full rounded-xl bg-lime py-4 font-bold text-white disabled:opacity-50"
               >
                 {saving ? t("loading") : t("assignProgram")}
               </button>
-              <p className="mt-4 text-center text-xs text-muted">
+              <p className="mt-4 text-center text-sm text-muted">
                 {t("scheduleHint")}
               </p>
 
               {pickerOpen ? (
-                <div className="mt-4 space-y-2 rounded-xl border border-border bg-[#111] p-4">
+                <div className="mt-4 space-y-2 rounded-xl border border-border bg-surface-muted p-4">
                   {programs.map((program) => (
                     <button
                       key={program.id}
                       type="button"
                       onClick={() => assignProgram(program.id)}
-                      className="block w-full rounded-lg bg-surface px-4 py-3 text-left text-sm text-white"
+                      className="block w-full rounded-lg border border-border bg-surface px-4 py-3 text-left text-base font-medium text-foreground"
                     >
                       {program.name}
                     </button>
@@ -172,7 +172,7 @@ export default function SchedulePage() {
                   <button
                     type="button"
                     onClick={() => setPickerOpen(false)}
-                    className="w-full py-2 text-xs text-muted"
+                    className="w-full py-2 text-sm font-medium text-muted"
                   >
                     Cancel
                   </button>

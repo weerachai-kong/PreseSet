@@ -12,8 +12,8 @@ export function LanguageSwitcher({
 
   return (
     <div>
-      <p className="mb-2 text-xs text-muted">{t("language")}</p>
-      <div className="flex overflow-hidden rounded-lg bg-surface">
+      <p className="field-label">{t("language")}</p>
+      <div className="flex overflow-hidden rounded-xl border border-border bg-surface-muted p-1">
         {(["th", "en"] as Locale[]).map((code) => (
           <button
             key={code}
@@ -22,8 +22,10 @@ export function LanguageSwitcher({
               setLocale(code);
               onLocaleChange?.(code);
             }}
-            className={`flex-1 py-2.5 text-sm font-bold ${
-              locale === code ? "bg-lime text-black" : "text-muted"
+            className={`flex-1 rounded-lg py-2.5 text-sm font-bold ${
+              locale === code
+                ? "bg-lime text-white shadow-sm"
+                : "text-foreground/70"
             }`}
           >
             {code === "th" ? "ไทย" : "English"}

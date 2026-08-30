@@ -45,9 +45,9 @@ export default function ProgramsPage() {
       <div className="flex h-full flex-col">
         <div className="flex items-center gap-3 px-6 pt-14 pb-4">
           <Link href="/home">
-            <ChevronLeft className="h-6 w-6 text-white" />
+            <ChevronLeft className="h-6 w-6 text-foreground" />
           </Link>
-          <h2 className="text-xl font-bold text-white">{t("programs")}</h2>
+          <h2 className="text-2xl font-bold text-foreground">{t("programs")}</h2>
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6">
@@ -64,11 +64,11 @@ export default function ProgramsPage() {
                 <Link
                   key={program.id}
                   href={`/programs/edit?id=${program.id}`}
-                  className="mb-3 flex items-center justify-between rounded-xl bg-surface p-4"
+                  className="mb-3 flex items-center justify-between rounded-xl bg-surface p-4 app-card"
                 >
                   <div>
-                    <p className="font-semibold text-white">{program.name}</p>
-                    <p className="mt-0.5 text-xs text-muted">
+                    <p className="font-bold text-foreground">{program.name}</p>
+                    <p className="mt-1 text-sm text-muted">
                       {programModeLabel(program.mode, t)} · {summary.stepCount}{" "}
                       {t("steps")}
                     </p>
@@ -83,7 +83,7 @@ export default function ProgramsPage() {
         <div className="px-6 pt-4 pb-4">
           <Link
             href={token ? "/programs/edit" : "/welcome"}
-            className="block w-full rounded-xl bg-lime py-4 text-center font-bold text-black"
+            className="block w-full rounded-xl bg-lime py-4 text-center font-bold text-white"
           >
             {t("newProgram")}
           </Link>

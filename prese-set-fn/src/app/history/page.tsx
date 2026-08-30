@@ -46,7 +46,7 @@ export default function HistoryPage() {
     <PhoneShell showNav>
       <div className="flex h-full flex-col">
         <div className="px-6 pt-14 pb-4">
-          <h2 className="text-xl font-bold text-white">{t("history")}</h2>
+          <h2 className="text-2xl font-bold text-foreground">{t("history")}</h2>
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pb-4">
@@ -58,19 +58,19 @@ export default function HistoryPage() {
             <p className="text-sm text-muted">{t("noProgramAssigned")}</p>
           ) : (
             sessions.map((item) => (
-              <div key={item.id} className="mb-3 rounded-xl bg-surface p-4">
+              <div key={item.id} className="mb-3 rounded-xl bg-surface p-4 app-card">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-white">
+                    <p className="text-sm font-bold text-foreground">
                       {item.program?.name ?? t("program")}
                     </p>
-                    <p className="mt-0.5 text-xs text-muted">
+                    <p className="mt-1 text-sm text-muted">
                       {programModeLabel(item.mode, t)} ·{" "}
                       {formatSessionDuration(item.startedAt, item.endedAt)}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-muted">
+                    <p className="text-sm text-muted">
                       {formatSessionDate(item.startedAt, locale)}
                     </p>
                     <span

@@ -50,10 +50,10 @@ export default function WelcomePage() {
         className="flex h-full flex-col items-center justify-center px-8 text-center"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 80%, #1a2010 0%, #0B0D0F 70%)",
+            "radial-gradient(ellipse at 50% 80%, #fff3e0 0%, #f0f2f5 70%)",
         }}
       >
-        <div className="timer-font mb-2 text-6xl font-black tracking-tight text-white">
+        <div className="timer-font mb-2 text-6xl font-black tracking-tight text-foreground">
           Pace<span className="text-lime">Set</span>
         </div>
         <p className="mt-4 mb-8 text-base text-muted">{t("tagline")}</p>
@@ -68,7 +68,7 @@ export default function WelcomePage() {
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder={t("displayName")}
-                className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-white outline-none focus:border-lime"
+                className="app-input"
               />
             ) : null}
             <input
@@ -77,7 +77,7 @@ export default function WelcomePage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t("email")}
-              className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-white outline-none focus:border-lime"
+              className="app-input"
             />
             <div className="relative">
               <input
@@ -87,12 +87,12 @@ export default function WelcomePage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={t("password")}
-                className="w-full rounded-xl border border-border bg-surface py-3 pr-12 pl-4 text-white outline-none focus:border-lime"
+                className="app-input py-3 pr-12 pl-4"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted hover:text-white"
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted hover:text-foreground"
                 aria-label={showPassword ? t("hidePassword") : t("showPassword")}
               >
                 {showPassword ? (
@@ -108,7 +108,7 @@ export default function WelcomePage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full rounded-xl bg-lime py-4 text-lg font-bold text-black disabled:opacity-60"
+              className="w-full rounded-xl bg-lime py-4 text-lg font-bold text-white disabled:opacity-60"
             >
               {submitting
                 ? t("loading")

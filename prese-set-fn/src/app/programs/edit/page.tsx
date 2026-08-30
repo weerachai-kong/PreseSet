@@ -92,8 +92,7 @@ function createStep(order: number, kind: StepKind): StepDraft {
       };
 }
 
-const numberInputClass =
-  "w-full rounded-lg border border-border bg-[#111] px-3 py-2 text-sm text-white outline-none focus:border-lime";
+const numberInputClass = "app-input py-2.5 text-sm";
 
 const modeVisual = {
   INTERVAL: {
@@ -102,9 +101,9 @@ const modeVisual = {
     iconClass: "text-lime",
   },
   REPS_SETS: {
-    badge: "border-sky-400/30 bg-sky-400/10 text-sky-300",
-    panel: "border-sky-400/25 bg-sky-400/[0.06]",
-    iconClass: "text-sky-300",
+    badge: "border-sky-500/30 bg-sky-500/10 text-sky-600",
+    panel: "border-sky-500/25 bg-sky-500/[0.06]",
+    iconClass: "text-sky-600",
   },
 } as const;
 
@@ -304,15 +303,15 @@ function EditProgramContent() {
       <div className="flex items-center justify-between px-6 pt-14 pb-4">
         <div className="flex items-center gap-3">
           <Link href="/programs">
-            <ChevronLeft className="h-6 w-6 text-white" />
+            <ChevronLeft className="h-6 w-6 text-foreground" />
           </Link>
-          <h2 className="text-xl font-bold text-white">{t("editProgram")}</h2>
+          <h2 className="text-2xl font-bold text-foreground">{t("editProgram")}</h2>
         </div>
         <button
           type="button"
           onClick={onSave}
           disabled={saving || !name.trim()}
-          className="text-sm font-bold text-lime disabled:opacity-50"
+          className="text-sm font-bold text-accent-dark disabled:opacity-50"
         >
           {saving ? t("loading") : t("save")}
         </button>
@@ -322,27 +321,27 @@ function EditProgramContent() {
         {error ? <p className="text-xs text-danger">{error}</p> : null}
 
         <div>
-          <label className="mb-1 block text-xs text-muted">
+          <label className="field-label">
             {t("programName")}
           </label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-lg border border-border bg-surface px-4 py-3 text-white outline-none focus:border-lime"
+            className="app-input"
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-xs text-muted">
+          <label className="field-label">
             {t("programMode")}
           </label>
-          <div className="flex overflow-hidden rounded-lg bg-surface">
+          <div className="flex overflow-hidden rounded-xl border border-border bg-surface-muted p-1">
             <button
               type="button"
               onClick={() => setProgramPreset("MIXED")}
-              className={`flex-1 px-1 py-2.5 text-xs font-bold sm:text-sm ${
-                preset === "MIXED" ? "bg-lime text-black" : "text-muted"
+              className={`flex-1 rounded-lg px-1 py-2.5 text-xs font-bold sm:text-sm ${
+                preset === "MIXED" ? "bg-lime text-white shadow-sm" : "text-foreground/70"
               }`}
             >
               {t("programModeMixed")}
@@ -350,8 +349,8 @@ function EditProgramContent() {
             <button
               type="button"
               onClick={() => setProgramPreset("INTERVAL")}
-              className={`flex-1 px-1 py-2.5 text-xs font-bold sm:text-sm ${
-                preset === "INTERVAL" ? "bg-lime text-black" : "text-muted"
+              className={`flex-1 rounded-lg px-1 py-2.5 text-xs font-bold sm:text-sm ${
+                preset === "INTERVAL" ? "bg-lime text-white shadow-sm" : "text-foreground/70"
               }`}
             >
               {t("interval")}
@@ -359,19 +358,19 @@ function EditProgramContent() {
             <button
               type="button"
               onClick={() => setProgramPreset("REPS_SETS")}
-              className={`flex-1 px-1 py-2.5 text-xs font-medium sm:text-sm ${
-                preset === "REPS_SETS" ? "bg-lime text-black" : "text-muted"
+              className={`flex-1 rounded-lg px-1 py-2.5 text-xs font-medium sm:text-sm ${
+                preset === "REPS_SETS" ? "bg-lime text-white shadow-sm" : "text-foreground/70"
               }`}
             >
               {t("repsSets")}
             </button>
           </div>
-          <p className="mt-1.5 text-xs text-muted">{t("programModeHint")}</p>
+          <p className="mt-2 text-sm text-muted">{t("programModeHint")}</p>
         </div>
 
         <div className="space-y-2">
           {visibleSteps.length === 0 ? (
-            <p className="rounded-xl bg-surface p-4 text-center text-xs text-muted">
+            <p className="rounded-xl bg-surface app-card p-4 text-center text-sm text-muted">
               {t("stepFilterEmpty")}
             </p>
           ) : null}
@@ -382,7 +381,7 @@ function EditProgramContent() {
             const ModeIcon = step.kind === "INTERVAL" ? Timer : Repeat2;
 
             return (
-            <div key={step.order} className="rounded-xl bg-surface">
+            <div key={step.order} className="rounded-xl bg-surface app-card">
               <div className="flex items-start gap-1 p-3">
                 <button
                   type="button"
@@ -400,7 +399,7 @@ function EditProgramContent() {
                   />
                   <div className="min-w-0 flex-1">
                     <div className="mb-1 flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-bold text-lime">
+                      <span className="text-sm font-bold text-accent-dark">
                         {t("stepLabel")} {step.order}
                       </span>
                       <StepModeBadge
@@ -412,7 +411,7 @@ function EditProgramContent() {
                         }
                       />
                     </div>
-                    <p className="truncate text-sm font-medium text-white">
+                    <p className="truncate text-sm font-medium text-foreground">
                       {step.title.trim() || t("stepTitlePlaceholder")}
                     </p>
                     <p className={`mt-0.5 truncate text-xs ${visual.iconClass}`}>
@@ -434,7 +433,7 @@ function EditProgramContent() {
               {isExpanded ? (
               <div className="space-y-3 border-t border-border px-4 pt-3 pb-4">
               <div>
-              <label className="mb-1 block text-xs font-medium text-white">
+              <label className="field-label">
                 {t("stepTitle")}
               </label>
               <input
@@ -444,11 +443,11 @@ function EditProgramContent() {
                 onChange={(e) =>
                   patchStep(step.order, { title: e.target.value })
                 }
-                className="w-full rounded-lg border border-border bg-[#111] px-3 py-2.5 text-sm text-white outline-none focus:border-lime"
+                className="app-input py-2.5 text-sm"
               />
               </div>
 
-              <label className="mb-1 block text-xs text-muted">
+              <label className="field-label">
                 {t("instruction")}
               </label>
               <input
@@ -457,7 +456,7 @@ function EditProgramContent() {
                 onChange={(e) =>
                   patchStep(step.order, { instruction: e.target.value })
                 }
-                className="w-full rounded-lg border border-border bg-[#111] px-3 py-2 text-sm text-white outline-none focus:border-lime"
+                className="app-input py-2.5 text-sm"
               />
 
               <div className={`rounded-xl border p-3 ${visual.panel}`}>
@@ -480,9 +479,9 @@ function EditProgramContent() {
                           className={`rounded-lg px-2 py-1 text-[10px] font-bold ${
                             step.kind === kind
                               ? kind === "INTERVAL"
-                                ? "bg-lime text-black"
-                                : "bg-sky-400 text-black"
-                              : "bg-[#222] text-muted"
+                                ? "bg-lime text-white"
+                                : "bg-sky-500 text-white"
+                              : "bg-surface-muted text-muted"
                           }`}
                         >
                           {kind === "INTERVAL"
@@ -593,7 +592,7 @@ function EditProgramContent() {
         <button
           type="button"
           onClick={addStep}
-          className="w-full rounded-xl border border-dashed border-[#444] py-3 text-sm font-medium text-muted"
+          className="w-full rounded-xl border border-dashed border-border py-3 text-sm font-medium text-muted"
         >
           + {t("addStep")}
         </button>
