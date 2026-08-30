@@ -65,7 +65,7 @@ export default function HistoryPage() {
           ) : sessions.length === 0 ? (
             <div className="rounded-2xl bg-surface app-card p-8 text-center">
               <p className="text-base font-medium text-foreground">
-                {t("noProgramAssigned")}
+                {t("historyEmpty")}
               </p>
               <p className="mt-2 text-sm text-muted">{t("historySubtitle")}</p>
             </div>

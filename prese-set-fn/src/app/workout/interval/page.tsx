@@ -6,7 +6,7 @@ import { Pause, Play, SkipForward, Square } from "lucide-react";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PageLoading } from "@/components/LoginPrompt";
 import { PhoneShell } from "@/components/PhoneShell";
-import { programsApi, scheduleApi } from "@/lib/api";
+import { programsApi, scheduleApi, sessionsApi } from "@/lib/api";
 import type { Program } from "@/lib/api/types";
 import { inferStepKind, stepDetail } from "@/lib/api/helpers";
 import { useAuth } from "@/lib/auth/AuthContext";
@@ -28,6 +28,7 @@ import {
   totalTimelineSeconds,
   type WorkoutSegment,
 } from "@/lib/workout/intervalTimeline";
+import { storeSessionSummary } from "@/lib/workout/sessionSummary";
 
 function IntervalWorkoutContent() {
   const { t } = useLocale();
@@ -50,6 +51,8 @@ function IntervalWorkoutContent() {
   );
   const prevSegmentRef = useRef<number | null>(null);
   const finishedBeepRef = useRef(false);
+  const workoutStartedAtRef = useRef<Date | null>(null);
+  const sessionSaveRef = useRef(false);
 
   const timeline = useMemo(
     () => (program ? buildWorkoutTimeline(program.steps) : []),
@@ -197,6 +200,8 @@ function IntervalWorkoutContent() {
         setFinished(false);
         prevSegmentRef.current = null;
         finishedBeepRef.current = false;
+        workoutStartedAtRef.current = null;
+        sessionSaveRef.current = false;
         primeWorkoutAudio();
       } catch {
         if (!cancelled) router.replace("/home");
@@ -263,10 +268,50 @@ function IntervalWorkoutContent() {
   }, [loading, paused, finished, current, secondsLeft]);
 
   useEffect(() => {
-    if (finished) {
+    if (!finished || !program || !token || sessionSaveRef.current) return;
+    sessionSaveRef.current = true;
+
+    const endedAt = new Date();
+    const startedAt = workoutStartedAtRef.current ?? endedAt;
+    const elapsedSec = Math.max(
+      0,
+      Math.floor((endedAt.getTime() - startedAt.getTime()) / 1000),
+    );
+    const workSegments = timeline.filter((segment) => segment.phase === "WORK");
+    const summary = {
+      programId: program.id,
+      programName: program.name,
+      mode: program.mode,
+      startedAt: startedAt.toISOString(),
+      endedAt: endedAt.toISOString(),
+      totalSeconds: elapsedSec,
+      roundsCompleted: workSegments.length,
+      roundsTotal: workSegments.length,
+      saved: false,
+    };
+
+    void (async () => {
+      try {
+        await sessionsApi.create(token, {
+          programId: program.id,
+          mode: program.mode,
+          startedAt: summary.startedAt,
+          endedAt: summary.endedAt,
+          completed: true,
+          summaryJson: {
+            programName: program.name,
+            totalSeconds: elapsedSec,
+            roundsCompleted: summary.roundsCompleted,
+            roundsTotal: summary.roundsTotal,
+          },
+        });
+        storeSessionSummary({ ...summary, saved: true });
+      } catch {
+        storeSessionSummary(summary);
+      }
       router.push("/summary");
-    }
-  }, [finished, router]);
+    })();
+  }, [finished, program, token, timeline, router]);
 
   useEffect(() => {
     if (loading || paused || finished || secondsLeft > 0) return;
@@ -440,7 +485,12 @@ function IntervalWorkoutContent() {
             type="button"
             onClick={() => {
               primeWorkoutAudio();
-              setPaused((p) => !p);
+              setPaused((p) => {
+                if (p && !workoutStartedAtRef.current) {
+                  workoutStartedAtRef.current = new Date();
+                }
+                return !p;
+              });
             }}
             className="flex h-16 w-16 items-center justify-center rounded-full bg-lime app-card"
           >
