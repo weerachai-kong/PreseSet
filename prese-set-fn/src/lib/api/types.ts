@@ -1,4 +1,5 @@
-export type ProgramMode = "INTERVAL" | "REPS_SETS";
+export type ProgramMode = "INTERVAL" | "REPS_SETS" | "MIXED";
+export type StepKind = "INTERVAL" | "REPS_SETS";
 export type Locale = "en" | "th";
 
 export type ExerciseStep = {

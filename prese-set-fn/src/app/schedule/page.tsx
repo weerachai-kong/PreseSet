@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { LoginPrompt, PageLoading } from "@/components/LoginPrompt";
 import { PhoneShell } from "@/components/PhoneShell";
 import { programsApi, scheduleApi } from "@/lib/api";
-import { apiDayToUiDay, estimateProgramMinutes, uiDayToApiDay } from "@/lib/api/helpers";
+import { apiDayToUiDay, estimateProgramMinutes, programModeLabel, uiDayToApiDay } from "@/lib/api/helpers";
 import type { Program, ScheduleEntry } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useLocale } from "@/lib/i18n/LocaleContext";
@@ -21,7 +21,7 @@ const days = [
 
 export default function SchedulePage() {
   const { t, locale } = useLocale();
-  const { token } = useAuth();
+  const { token, isLoading: authLoading } = useAuth();
   const [selected, setSelected] = useState(() => {
     const jsDay = new Date().getDay();
     return apiDayToUiDay(jsDay);
@@ -32,7 +32,7 @@ export default function SchedulePage() {
     {},
   );
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [loading, setLoading] = useState(!!token);
+  const [loadedToken, setLoadedToken] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const day = days[selected];
@@ -43,13 +43,12 @@ export default function SchedulePage() {
     : null;
 
   useEffect(() => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
+    if (authLoading || !token) return;
+
+    let cancelled = false;
     Promise.all([scheduleApi.list(token), programsApi.list(token)])
       .then(([scheduleList, programList]) => {
+        if (cancelled) return;
         setSchedule(scheduleList);
         setPrograms(programList);
         const map: Record<string, Program> = {};
@@ -57,11 +56,20 @@ export default function SchedulePage() {
         setProgramDetails(map);
       })
       .catch(() => {
+        if (cancelled) return;
         setSchedule([]);
         setPrograms([]);
       })
-      .finally(() => setLoading(false));
-  }, [token]);
+      .finally(() => {
+        if (!cancelled) setLoadedToken(token);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, authLoading]);
+
+  const loading = authLoading || (Boolean(token) && loadedToken !== token);
 
   const durationMin = useMemo(
     () => (assigned ? estimateProgramMinutes(assigned.steps) : 0),
@@ -94,16 +102,11 @@ export default function SchedulePage() {
           <h2 className="text-xl font-bold text-white">{t("weeklySchedule")}</h2>
         </div>
 
-        <div className="px-6">
-          {!token ? (
-            <p className="text-sm text-muted">
-              {t("loginRequired")}{" "}
-              <Link href="/welcome" className="text-lime underline">
-                {t("signIn")}
-              </Link>
-            </p>
-          ) : loading ? (
-            <p className="text-sm text-muted">{t("loading")}</p>
+        <div className="flex min-h-0 flex-1 flex-col px-6">
+          {loading ? (
+            <PageLoading />
+          ) : !token ? (
+            <LoginPrompt />
           ) : (
             <>
               <div className="mb-8 flex justify-between">
@@ -133,10 +136,8 @@ export default function SchedulePage() {
                       {assigned.name}
                     </p>
                     <p className="mt-1 text-sm text-muted">
-                      {assigned.mode === "INTERVAL"
-                        ? t("interval")
-                        : t("repsSets")}{" "}
-                      · {durationMin} {t("minutes")}
+                      {programModeLabel(assigned.mode, t)} · {durationMin}{" "}
+                      {t("minutes")}
                     </p>
                   </>
                 ) : (

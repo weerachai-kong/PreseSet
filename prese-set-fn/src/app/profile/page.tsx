@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { LoginPrompt, PageLoading } from "@/components/LoginPrompt";
 import { PhoneShell } from "@/components/PhoneShell";
 import { usersApi } from "@/lib/api";
 import { useAuth, getAuthErrorMessage } from "@/lib/auth/AuthContext";
@@ -21,39 +21,48 @@ import {
 export default function ProfilePage() {
   const { t } = useLocale();
   const router = useRouter();
-  const { token, user, logout, refreshProfile } = useAuth();
+  const { token, user, logout, refreshProfile, isLoading: authLoading } = useAuth();
   const { settings, updateSettings } = useSettings();
   const [permNote, setPermNote] = useState<string | null>(null);
   const [testNote, setTestNote] = useState<string | null>(null);
   const [showTestPreview, setShowTestPreview] = useState(false);
-  const [displayName, setDisplayName] = useState(settings.displayName);
+  const [displayNameDraft, setDisplayNameDraft] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  const displayName =
+    displayNameDraft ?? user?.displayName ?? settings.displayName;
 
   useEffect(() => {
     if (!user) return;
-    setDisplayName(user.displayName);
-    updateSettings({
-      displayName: user.displayName,
-      email: user.email,
-      beepEnabled: user.beepEnabled,
-      waterReminderEnabled: user.waterReminderEnabled,
-      waterReminderIntervalMinutes:
-        user.waterReminderIntervalMinutes as WaterIntervalMinutes,
+    queueMicrotask(() => {
+      updateSettings({
+        displayName: user.displayName,
+        email: user.email,
+        beepEnabled: user.beepEnabled,
+        waterReminderEnabled: user.waterReminderEnabled,
+        waterReminderIntervalMinutes:
+          user.waterReminderIntervalMinutes as WaterIntervalMinutes,
+      });
     });
   }, [user, updateSettings]);
 
   useEffect(() => {
-    if (!settings.waterReminderEnabled) return;
-    const perm = getNotificationPermission();
-    if (perm === "granted") {
-      setPermNote(null);
-      return;
-    }
-    if (perm === "denied") {
-      setPermNote(`${t("waterPermissionDenied")} ${t("waterReloadHint")}`);
-      return;
-    }
-    setPermNote(t("waterPermissionStale"));
+    queueMicrotask(() => {
+      if (!settings.waterReminderEnabled) {
+        setPermNote(null);
+        return;
+      }
+      const perm = getNotificationPermission();
+      if (perm === "granted") {
+        setPermNote(null);
+        return;
+      }
+      if (perm === "denied") {
+        setPermNote(`${t("waterPermissionDenied")} ${t("waterReloadHint")}`);
+        return;
+      }
+      setPermNote(t("waterPermissionStale"));
+    });
   }, [settings.waterReminderEnabled, t]);
 
   const syncToApi = async (patch: {
@@ -135,21 +144,17 @@ export default function ProfilePage() {
 
   return (
     <PhoneShell showNav>
-      <div className="flex h-full flex-col overflow-y-auto">
+      <div className="flex h-full flex-col">
         <div className="px-6 pt-14 pb-4">
           <h2 className="text-xl font-bold text-white">{t("profile")}</h2>
         </div>
 
-        <div className="space-y-6 px-6 pb-8">
-          {!token ? (
-            <p className="text-sm text-muted">
-              {t("loginRequired")}{" "}
-              <Link href="/welcome" className="text-lime underline">
-                {t("signIn")}
-              </Link>
-            </p>
-          ) : null}
-
+        {authLoading ? (
+          <PageLoading />
+        ) : !token ? (
+          <LoginPrompt />
+        ) : (
+        <div className="flex-1 space-y-6 overflow-y-auto px-6 pb-8">
           {saveError ? (
             <p className="text-xs text-danger">{saveError}</p>
           ) : null}
@@ -161,10 +166,12 @@ export default function ProfilePage() {
             <input
               type="text"
               value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
+              onChange={(e) => setDisplayNameDraft(e.target.value)}
               onBlur={() => {
                 updateSettings({ displayName });
-                syncToApi({ displayName });
+                void syncToApi({ displayName }).finally(() =>
+                  setDisplayNameDraft(null),
+                );
               }}
               className="w-full rounded-lg border border-border bg-surface px-4 py-3 text-white outline-none focus:border-lime"
             />
@@ -292,6 +299,7 @@ export default function ProfilePage() {
             {t("logOut")}
           </button>
         </div>
+        )}
       </div>
     </PhoneShell>
   );

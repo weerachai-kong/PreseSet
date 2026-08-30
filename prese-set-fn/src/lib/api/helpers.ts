@@ -1,4 +1,4 @@
-import type { ExerciseStep, Program, ProgramMode } from "./types";
+import type { ExerciseStep, Program, ProgramMode, StepKind } from "./types";
 
 /** UI day index: 0=Mon … 6=Sun → JS getDay(): 0=Sun … 6=Sat */
 export function uiDayToApiDay(uiIndex: number) {
@@ -27,6 +27,33 @@ export function estimateProgramMinutes(steps: ExerciseStep[]): number {
   return Math.max(1, Math.round(totalSec / 60));
 }
 
+export function inferStepKind(
+  step: Pick<
+    ExerciseStep,
+    "reps" | "sets" | "workSeconds" | "restSeconds" | "rounds"
+  >,
+): StepKind {
+  return step.reps != null && step.sets != null ? "REPS_SETS" : "INTERVAL";
+}
+
+export function deriveProgramMode(
+  steps: Pick<ExerciseStep, "reps" | "sets">[],
+): ProgramMode {
+  if (steps.length === 0) return "INTERVAL";
+  const kinds = new Set(steps.map((s) => inferStepKind(s)));
+  if (kinds.size > 1) return "MIXED";
+  return inferStepKind(steps[0]);
+}
+
+export function programModeLabel(
+  mode: ProgramMode,
+  t: (key: "interval" | "repsSets" | "programModeMixed") => string,
+): string {
+  if (mode === "MIXED") return t("programModeMixed");
+  if (mode === "INTERVAL") return t("interval");
+  return t("repsSets");
+}
+
 export function programSummary(program: Program) {
   return {
     id: program.id,
@@ -37,7 +64,7 @@ export function programSummary(program: Program) {
   };
 }
 
-export function stepDetail(step: ExerciseStep, mode: ProgramMode): string {
+export function stepDetail(step: ExerciseStep, kind: StepKind): string {
   if (step.reps != null && step.sets != null) {
     const work =
       step.workSeconds != null ? ` · ${step.workSeconds}s work` : "";
@@ -52,7 +79,7 @@ export function stepDetail(step: ExerciseStep, mode: ProgramMode): string {
     const rounds = step.rounds != null ? ` × ${step.rounds} rounds` : "";
     return `${step.workSeconds}s work / ${rest}s rest${rounds}`;
   }
-  if (mode === "INTERVAL") return "";
+  if (kind === "INTERVAL") return "";
   return "";
 }
 

@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { LoginPrompt, PageLoading } from "@/components/LoginPrompt";
 import { PhoneShell } from "@/components/PhoneShell";
 import { sessionsApi } from "@/lib/api";
 import {
   formatSessionDate,
   formatSessionDuration,
+  programModeLabel,
 } from "@/lib/api/helpers";
 import type { WorkoutSession } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthContext";
@@ -14,22 +15,32 @@ import { useLocale } from "@/lib/i18n/LocaleContext";
 
 export default function HistoryPage() {
   const { t, locale } = useLocale();
-  const { token } = useAuth();
+  const { token, isLoading: authLoading } = useAuth();
   const [sessions, setSessions] = useState<WorkoutSession[]>([]);
-  const [loading, setLoading] = useState(!!token);
+  const [loadedToken, setLoadedToken] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
+    if (authLoading || !token) return;
+
+    let cancelled = false;
     sessionsApi
       .list(token)
-      .then(setSessions)
-      .catch(() => setSessions([]))
-      .finally(() => setLoading(false));
-  }, [token]);
+      .then((data) => {
+        if (!cancelled) setSessions(data);
+      })
+      .catch(() => {
+        if (!cancelled) setSessions([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadedToken(token);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, authLoading]);
+
+  const loading = authLoading || (Boolean(token) && loadedToken !== token);
 
   return (
     <PhoneShell showNav>
@@ -38,31 +49,24 @@ export default function HistoryPage() {
           <h2 className="text-xl font-bold text-white">{t("history")}</h2>
         </div>
 
-        <div className="flex-1 space-y-3 overflow-y-auto px-6 pb-4">
-          {!token ? (
-            <p className="text-sm text-muted">
-              {t("loginRequired")}{" "}
-              <Link href="/welcome" className="text-lime underline">
-                {t("signIn")}
-              </Link>
-            </p>
-          ) : loading ? (
-            <p className="text-sm text-muted">{t("loading")}</p>
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pb-4">
+          {loading ? (
+            <PageLoading />
+          ) : !token ? (
+            <LoginPrompt />
           ) : sessions.length === 0 ? (
             <p className="text-sm text-muted">{t("noProgramAssigned")}</p>
           ) : (
             sessions.map((item) => (
-              <div key={item.id} className="rounded-xl bg-surface p-4">
+              <div key={item.id} className="mb-3 rounded-xl bg-surface p-4">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm font-semibold text-white">
                       {item.program?.name ?? t("program")}
                     </p>
                     <p className="mt-0.5 text-xs text-muted">
-                      {item.mode === "INTERVAL"
-                        ? t("interval")
-                        : t("repsSets")}{" "}
-                      · {formatSessionDuration(item.startedAt, item.endedAt)}
+                      {programModeLabel(item.mode, t)} ·{" "}
+                      {formatSessionDuration(item.startedAt, item.endedAt)}
                     </p>
                   </div>
                   <div className="text-right">

@@ -3,31 +3,42 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { LoginPrompt, PageLoading } from "@/components/LoginPrompt";
 import { PhoneShell } from "@/components/PhoneShell";
 import { programsApi } from "@/lib/api";
-import { programSummary } from "@/lib/api/helpers";
+import { programSummary, programModeLabel } from "@/lib/api/helpers";
 import type { Program } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useLocale } from "@/lib/i18n/LocaleContext";
 
 export default function ProgramsPage() {
   const { t } = useLocale();
-  const { token } = useAuth();
+  const { token, isLoading: authLoading } = useAuth();
   const [programs, setPrograms] = useState<Program[]>([]);
-  const [loading, setLoading] = useState(!!token);
+  const [loadedToken, setLoadedToken] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
+    if (authLoading || !token) return;
+
+    let cancelled = false;
     programsApi
       .list(token)
-      .then(setPrograms)
-      .catch(() => setPrograms([]))
-      .finally(() => setLoading(false));
-  }, [token]);
+      .then((data) => {
+        if (!cancelled) setPrograms(data);
+      })
+      .catch(() => {
+        if (!cancelled) setPrograms([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadedToken(token);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, authLoading]);
+
+  const loading = authLoading || (Boolean(token) && loadedToken !== token);
 
   return (
     <PhoneShell showNav>
@@ -39,16 +50,11 @@ export default function ProgramsPage() {
           <h2 className="text-xl font-bold text-white">{t("programs")}</h2>
         </div>
 
-        <div className="flex-1 space-y-3 overflow-y-auto px-6">
-          {!token ? (
-            <p className="text-sm text-muted">
-              {t("loginRequired")}{" "}
-              <Link href="/welcome" className="text-lime underline">
-                {t("signIn")}
-              </Link>
-            </p>
-          ) : loading ? (
-            <p className="text-sm text-muted">{t("loading")}</p>
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6">
+          {loading ? (
+            <PageLoading />
+          ) : !token ? (
+            <LoginPrompt />
           ) : programs.length === 0 ? (
             <p className="text-sm text-muted">{t("noProgramAssigned")}</p>
           ) : (
@@ -58,15 +64,13 @@ export default function ProgramsPage() {
                 <Link
                   key={program.id}
                   href={`/programs/edit?id=${program.id}`}
-                  className="flex items-center justify-between rounded-xl bg-surface p-4"
+                  className="mb-3 flex items-center justify-between rounded-xl bg-surface p-4"
                 >
                   <div>
                     <p className="font-semibold text-white">{program.name}</p>
                     <p className="mt-0.5 text-xs text-muted">
-                      {program.mode === "INTERVAL"
-                        ? t("interval")
-                        : t("repsSets")}{" "}
-                      · {summary.stepCount} {t("steps")}
+                      {programModeLabel(program.mode, t)} · {summary.stepCount}{" "}
+                      {t("steps")}
                     </p>
                   </div>
                   <ChevronRight className="h-5 w-5 text-muted" />

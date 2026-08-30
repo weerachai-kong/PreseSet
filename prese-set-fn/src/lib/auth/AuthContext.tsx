@@ -13,6 +13,7 @@ import { ApiError, authApi, usersApi } from "@/lib/api";
 import type { UserProfile } from "@/lib/api/types";
 
 const TOKEN_KEY = "paceset.accessToken";
+const GUEST_KEY = "paceset.guest";
 
 type AuthContextValue = {
   token: string | null;
@@ -46,26 +47,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [token]);
 
   useEffect(() => {
+    let cancelled = false;
     const saved = window.localStorage.getItem(TOKEN_KEY);
-    if (!saved) {
-      setIsLoading(false);
-      return;
+
+    if (saved) {
+      window.sessionStorage.removeItem(GUEST_KEY);
+      queueMicrotask(() => {
+        if (cancelled) return;
+        setToken(saved);
+        setIsGuest(false);
+        void refreshProfile(saved)
+          .catch(() => {
+            if (cancelled) return;
+            window.localStorage.removeItem(TOKEN_KEY);
+            setToken(null);
+            setUser(null);
+          })
+          .finally(() => {
+            if (!cancelled) setIsLoading(false);
+          });
+      });
+    } else {
+      queueMicrotask(() => {
+        if (cancelled) return;
+        setIsGuest(window.sessionStorage.getItem(GUEST_KEY) === "1");
+        setIsLoading(false);
+      });
     }
-    setToken(saved);
-    refreshProfile(saved)
-      .catch(() => {
-        window.localStorage.removeItem(TOKEN_KEY);
-        setToken(null);
-        setUser(null);
-      })
-      .finally(() => setIsLoading(false));
+
+    return () => {
+      cancelled = true;
+    };
   }, [refreshProfile]);
 
   const persistToken = useCallback(
     async (accessToken: string) => {
+      window.sessionStorage.removeItem(GUEST_KEY);
       window.localStorage.setItem(TOKEN_KEY, accessToken);
       setToken(accessToken);
       setIsGuest(false);
+      setIsLoading(false);
       await refreshProfile(accessToken);
     },
     [refreshProfile],
@@ -89,16 +110,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     window.localStorage.removeItem(TOKEN_KEY);
+    window.sessionStorage.removeItem(GUEST_KEY);
     setToken(null);
     setUser(null);
     setIsGuest(false);
+    setIsLoading(false);
   }, []);
 
   const enterGuest = useCallback(() => {
     window.localStorage.removeItem(TOKEN_KEY);
+    window.sessionStorage.setItem(GUEST_KEY, "1");
     setToken(null);
     setUser(null);
     setIsGuest(true);
+    setIsLoading(false);
   }, []);
 
   const value = useMemo(
