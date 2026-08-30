@@ -15,5 +15,13 @@
    เก็บรูป/วิดีโอ workout → FN/BN อัปโหลดไป Firebase Storage
 
 
+□ Fix TypeScript ใน helpers.ts ให้ npm run build ผ่าน
+□ Commit + push โค้ดล่าสุด
+□ Neon: สร้าง DB + ใส่ DATABASE_URL บน Render
+□ Render: deploy BN + migrate
+□ Vercel: NEXT_PUBLIC_API_URL ชี้ API จริง
+□ ทดสอบบน production: สมัคร → สร้างโปรแกรม → schedule → workout จบ → ประวัติ
+
+
 // รอบหน้าปรับให้รองรับการ สร้างโปรแกรมการออกกำลังกายผ่าน AI แล้วนำมาวางที่ระบบ จะสร้างให้เองโดยใช้ template ที่ตรงกันกับของระบบ จึงจะสร้าง แล้วผู้ใช้ค่อยไปเลือกว่าโปรแกรมนี้จะออกกำลังกายวันไหนอีกที.
 // ปรับเรื่องระบบการแจ้งเตือนกินน้ำ

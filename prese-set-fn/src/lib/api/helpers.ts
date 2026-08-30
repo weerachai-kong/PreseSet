@@ -28,10 +28,7 @@ export function estimateProgramMinutes(steps: ExerciseStep[]): number {
 }
 
 export function inferStepKind(
-  step: Pick<
-    ExerciseStep,
-    "reps" | "sets" | "workSeconds" | "restSeconds" | "rounds"
-  >,
+  step: Pick<ExerciseStep, "reps" | "sets">,
 ): StepKind {
   return step.reps != null && step.sets != null ? "REPS_SETS" : "INTERVAL";
 }
