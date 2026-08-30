@@ -3,7 +3,11 @@
 import { useLocale } from "@/lib/i18n/LocaleContext";
 import type { Locale } from "@/lib/i18n/dictionaries";
 
-export function LanguageSwitcher() {
+export function LanguageSwitcher({
+  onLocaleChange,
+}: {
+  onLocaleChange?: (locale: Locale) => void;
+}) {
   const { locale, setLocale, t } = useLocale();
 
   return (
@@ -14,7 +18,10 @@ export function LanguageSwitcher() {
           <button
             key={code}
             type="button"
-            onClick={() => setLocale(code)}
+            onClick={() => {
+              setLocale(code);
+              onLocaleChange?.(code);
+            }}
             className={`flex-1 py-2.5 text-sm font-bold ${
               locale === code ? "bg-lime text-black" : "text-muted"
             }`}

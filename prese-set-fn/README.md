@@ -2,18 +2,34 @@
 
 Next.js (App Router) + TypeScript + Tailwind — UI สำหรับ PaceSet
 
-> ตอนนี้ใช้ **mock data** ในเครื่อง — ยังไม่เรียก Backend  
 > คู่มือรันทั้งระบบ: ดู [`../README.md`](../README.md)
 
-## รัน local
+## รัน local (เชื่อม BN)
+
+**Terminal 1 — Backend + DB**
+
+```bash
+cd prese-set-bn
+npm run db:up
+npm run start:dev
+```
+
+**Terminal 2 — Frontend**
 
 ```bash
 cd prese-set-fn
+cp .env.local.example .env.local   # ครั้งแรก
 npm install
 npm run dev
 ```
 
-เปิด [http://localhost:3000](http://localhost:3000)
+เปิด [http://localhost:3000/welcome](http://localhost:3000/welcome) → สมัคร/เข้าสู่ระบบ → ข้อมูลมาจาก API ที่ `http://localhost:3001/api`
+
+Env (`prese-set-fn/.env.local`):
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
+```
 
 ## หน้าหลัก
 

@@ -1,16 +1,45 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { User } from "lucide-react";
 import { PhoneShell } from "@/components/PhoneShell";
+import { programsApi, scheduleApi } from "@/lib/api";
+import { estimateProgramMinutes } from "@/lib/api/helpers";
+import type { Program } from "@/lib/api/types";
+import { useAuth } from "@/lib/auth/AuthContext";
 import { useLocale } from "@/lib/i18n/LocaleContext";
-import { mockPrograms } from "@/lib/mock-data";
-// import { mockPrograms } from "@/lib/mock-data";
-
 
 export default function HomePage() {
   const { t } = useLocale();
-  const today = mockPrograms[0];
+  const { token } = useAuth();
+  const [todayProgram, setTodayProgram] = useState<Program | null>(null);
+  const [loading, setLoading] = useState(!!token);
+
+  useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    scheduleApi
+      .today(token)
+      .then(async (entry) => {
+        if (!entry?.programId) {
+          setTodayProgram(null);
+          return;
+        }
+        const program = await programsApi.get(token, entry.programId);
+        setTodayProgram(program);
+      })
+      .catch(() => setTodayProgram(null))
+      .finally(() => setLoading(false));
+  }, [token]);
+
+  const workoutHref =
+    todayProgram?.mode === "REPS_SETS"
+      ? "/workout/reps"
+      : "/workout/interval";
 
   return (
     <PhoneShell showNav>
@@ -29,24 +58,52 @@ export default function HomePage() {
 
         <div className="px-6 pt-6">
           <h2 className="mb-6 text-2xl font-bold text-white">{t("today")}</h2>
-          <div className="rounded-2xl bg-surface p-6">
-            <div className="mb-2 flex items-center gap-2">
-              <span className="rounded bg-[#1a2a0a] px-2 py-0.5 text-xs font-semibold text-lime">
-                {t("interval")}
-              </span>
-              <span className="text-xs text-muted">
-                {today.durationMin} {t("minutes")}
-              </span>
+
+          {!token ? (
+            <p className="rounded-2xl bg-surface p-6 text-sm text-muted">
+              {t("loginRequired")}{" "}
+              <Link href="/welcome" className="text-lime underline">
+                {t("signIn")}
+              </Link>
+            </p>
+          ) : loading ? (
+            <p className="text-sm text-muted">{t("loading")}</p>
+          ) : todayProgram ? (
+            <div className="rounded-2xl bg-surface p-6">
+              <div className="mb-2 flex items-center gap-2">
+                <span className="rounded bg-[#1a2a0a] px-2 py-0.5 text-xs font-semibold text-lime">
+                  {todayProgram.mode === "INTERVAL"
+                    ? t("interval")
+                    : t("repsSets")}
+                </span>
+                <span className="text-xs text-muted">
+                  {estimateProgramMinutes(todayProgram.steps)} {t("minutes")}
+                </span>
+              </div>
+              <h3 className="mb-1 text-xl font-bold text-white">
+                {todayProgram.name}
+              </h3>
+              <p className="text-sm text-muted">
+                {todayProgram.steps.length} {t("steps")}
+              </p>
             </div>
-            <h3 className="mb-1 text-xl font-bold text-white">{today.name}</h3>
-            <p className="text-sm text-muted">{today.description}</p>
-          </div>
-          <Link
-            href="/workout/interval"
-            className="mt-8 block w-full rounded-xl bg-lime py-4 text-center text-lg font-bold text-black"
-          >
-            {t("startWorkout")}
-          </Link>
+          ) : (
+            <p className="rounded-2xl bg-surface p-6 text-sm text-muted">
+              {t("noProgramAssigned")}{" "}
+              <Link href="/schedule" className="text-lime underline">
+                {t("schedule")}
+              </Link>
+            </p>
+          )}
+
+          {token && todayProgram ? (
+            <Link
+              href={workoutHref}
+              className="mt-8 block w-full rounded-xl bg-lime py-4 text-center text-lg font-bold text-black"
+            >
+              {t("startWorkout")}
+            </Link>
+          ) : null}
         </div>
       </div>
     </PhoneShell>

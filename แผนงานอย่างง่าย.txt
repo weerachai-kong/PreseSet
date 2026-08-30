@@ -1,0 +1,15 @@
+1. Push โค้ด → GitHub (ทำแล้ว ✓)
+
+2. Frontend
+   GitHub → Vercel (auto deploy เมื่อ push)
+   ได้ URL: https://preseset.vercel.app
+
+3. Backend
+   GitHub → Render / Railway (free tier)
+   ได้ URL: https://preseset-api.onrender.com
+
+4. Database
+   Neon (ฟรีมีโควต้า) หรือ notebook Ubuntu ที่บ้าน
+
+5. Firebase (ทีหลัง)
+   เก็บรูป/วิดีโอ workout → FN/BN อัปโหลดไป Firebase Storage

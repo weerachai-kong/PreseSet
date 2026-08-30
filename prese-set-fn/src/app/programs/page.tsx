@@ -1,14 +1,33 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { PhoneShell } from "@/components/PhoneShell";
+import { programsApi } from "@/lib/api";
+import { programSummary } from "@/lib/api/helpers";
+import type { Program } from "@/lib/api/types";
+import { useAuth } from "@/lib/auth/AuthContext";
 import { useLocale } from "@/lib/i18n/LocaleContext";
-import { mockPrograms } from "@/lib/mock-data";
 
 export default function ProgramsPage() {
   const { t } = useLocale();
-  const list = mockPrograms.slice(1);
+  const { token } = useAuth();
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [loading, setLoading] = useState(!!token);
+
+  useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    programsApi
+      .list(token)
+      .then(setPrograms)
+      .catch(() => setPrograms([]))
+      .finally(() => setLoading(false));
+  }, [token]);
 
   return (
     <PhoneShell showNav>
@@ -21,29 +40,45 @@ export default function ProgramsPage() {
         </div>
 
         <div className="flex-1 space-y-3 overflow-y-auto px-6">
-          {list.map((program) => (
-            <Link
-              key={program.id}
-              href={
-                program.mode === "REPS_SETS" ? "/workout/reps" : "/programs/edit"
-              }
-              className="flex items-center justify-between rounded-xl bg-surface p-4"
-            >
-              <div>
-                <p className="font-semibold text-white">{program.name}</p>
-                <p className="mt-0.5 text-xs text-muted">
-                  {program.mode === "INTERVAL" ? t("interval") : t("repsSets")} ·{" "}
-                  {program.stepCount} {t("steps")}
-                </p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted" />
-            </Link>
-          ))}
+          {!token ? (
+            <p className="text-sm text-muted">
+              {t("loginRequired")}{" "}
+              <Link href="/welcome" className="text-lime underline">
+                {t("signIn")}
+              </Link>
+            </p>
+          ) : loading ? (
+            <p className="text-sm text-muted">{t("loading")}</p>
+          ) : programs.length === 0 ? (
+            <p className="text-sm text-muted">{t("noProgramAssigned")}</p>
+          ) : (
+            programs.map((program) => {
+              const summary = programSummary(program);
+              return (
+                <Link
+                  key={program.id}
+                  href={`/programs/edit?id=${program.id}`}
+                  className="flex items-center justify-between rounded-xl bg-surface p-4"
+                >
+                  <div>
+                    <p className="font-semibold text-white">{program.name}</p>
+                    <p className="mt-0.5 text-xs text-muted">
+                      {program.mode === "INTERVAL"
+                        ? t("interval")
+                        : t("repsSets")}{" "}
+                      · {summary.stepCount} {t("steps")}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted" />
+                </Link>
+              );
+            })
+          )}
         </div>
 
         <div className="px-6 pt-4 pb-4">
           <Link
-            href="/programs/edit"
+            href={token ? "/programs/edit" : "/welcome"}
             className="block w-full rounded-xl bg-lime py-4 text-center font-bold text-black"
           >
             {t("newProgram")}

@@ -59,6 +59,20 @@ PORT=3001
 
 Protected routes: header `Authorization: Bearer <accessToken>`
 
+### Dev test user (local)
+
+```bash
+npm run seed:dev-user
+```
+
+| Field | Value |
+|-------|-------|
+| Email | `admin@paceset.app` |
+| Password | `PassW0rd!` |
+| Display name | `admin` |
+
+> Login ใช้ **email** ไม่ใช่ชื่อ `admin` อย่างเดียว
+
 ## Main endpoints (all POST)
 
 | Path | Description | Body |

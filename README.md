@@ -4,11 +4,11 @@ Mobile workout pacing app (Interval + Reps & Sets)
 
 | ส่วน | โฟลเดอร์ | พอร์ต | สถานะตอนนี้ |
 |------|----------|-------|-------------|
-| Frontend (FN) | `prese-set-fn` | **3000** | UI + mock data |
+| Frontend (FN) | `prese-set-fn` | **3000** | Next.js → เรียก BN API |
 | Backend (BN) | `prese-set-bn` | **3001** | Nest API + PostgreSQL |
 | Database | Docker (`paceset-postgres`) | **5434** → 5432 ใน container | Prisma migrations |
 
-> FN ยังใช้ mock data อยู่ — รันแยกจาก BN ได้เลย  
+> FN เชื่อม BN แล้ว — ต้อง login ถึงจะ sync ข้อมูล (guest ดู UI ได้แต่ไม่มีข้อมูลจาก API)  
 > BN ต้องมี Docker + Postgres ก่อน `start:dev`
 
 ---
@@ -74,11 +74,14 @@ cd prese-set-fn
 # 1) ติดตั้ง dependency (ครั้งแรก)
 npm install
 
-# 2) รัน Next.js
+# 2) ชี้ API (ครั้งแรก)
+cp .env.local.example .env.local
+
+# 3) รัน Next.js
 npm run dev
 ```
 
-เปิดเบราว์เซอร์: [http://localhost:3000](http://localhost:3000)
+เปิด [http://localhost:3000/welcome](http://localhost:3000/welcome) → **สมัคร/เข้าสู่ระบบ** → ข้อมูลมาจาก BN
 
 ---
 
@@ -86,9 +89,11 @@ npm run dev
 
 ### Frontend
 
-1. เปิด `http://localhost:3000` → ไปหน้า Welcome / Home ได้
-2. สลับภาษา TH/EN ได้
-3. เปิด Programs / Schedule / Workout screens ได้ (ข้อมูลเป็น mock)
+1. เปิด `http://localhost:3000/welcome` → สมัครหรือ login
+2. ไป Programs → สร้างโปรแกรม → ควรเห็นใน list
+3. Schedule → เลือกวัน → assign program
+4. Home → แสดงโปรแกรมวันนี้ (ถ้ามีในตาราง)
+5. Profile → แก้ชื่อ/ตั้งค่า → sync ไป BN
 
 ### Backend
 
@@ -180,10 +185,12 @@ lsof -i :3001
 2. ตรวจว่า `.env` มี `localhost:5434`
 3. รันใหม่: `npx prisma migrate deploy`
 
-### FN ขึ้น แต่ไม่มีข้อมูลจาก API
+### FN ขึ้น แต่ API error / ไม่มีข้อมูล
 
-ปกติ — ตอนนี้ FN ยังเป็น mock data ยังไม่ได้เชื่อม `http://localhost:3001/api`  
-BN ทดสอบด้วย `curl` หรือ REST client ได้ตาม README ของ bn
+1. เช็ค BN รันอยู่: `curl -s -X POST http://localhost:3001/api/health`
+2. เช็ค `prese-set-fn/.env.local` มี `NEXT_PUBLIC_API_URL=http://localhost:3001/api`
+3. ต้อง **login** ที่ `/welcome` — guest mode ไม่เรียก API
+4. Restart `npm run dev` หลังแก้ `.env.local`
 
 ---
 
