@@ -9,13 +9,18 @@ import { useLocale } from "@/lib/i18n/LocaleContext";
 
 type Mode = "login" | "register";
 
+const DEV_LOGIN =
+  process.env.NODE_ENV === "development"
+    ? { email: "admin@paceset.app", password: "PassW0rd!" }
+    : { email: "", password: "" };
+
 export default function WelcomePage() {
   const { t } = useLocale();
   const router = useRouter();
   const { login, register, enterGuest, isLoading } = useAuth();
   const [mode, setMode] = useState<Mode>("login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(DEV_LOGIN.email);
+  const [password, setPassword] = useState(DEV_LOGIN.password);
   const [displayName, setDisplayName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { User } from "lucide-react";
+import { HomeHeader } from "@/components/PageHeader";
+import { PageContent } from "@/components/PageContent";
 import { PhoneShell } from "@/components/PhoneShell";
 import { programsApi, scheduleApi } from "@/lib/api";
-import { estimateProgramMinutes, programModeLabel } from "@/lib/api/helpers";
+import { estimateProgramMinutes, inferStepKind, programModeLabel } from "@/lib/api/helpers";
 import type { Program } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useLocale } from "@/lib/i18n/LocaleContext";
@@ -58,10 +59,15 @@ export default function HomePage() {
     token && fetchResult?.key === token ? fetchResult.program : null;
   const loading = authLoading || Boolean(token && fetchResult?.key !== token);
 
-  const workoutHref =
-    todayProgram?.mode === "REPS_SETS"
-      ? "/workout/reps"
-      : "/workout/interval";
+  const workoutHref = todayProgram
+    ? (() => {
+        const hasInterval = todayProgram.steps.some(
+          (s) => inferStepKind(s) === "INTERVAL" && s.workSeconds != null,
+        );
+        const base = hasInterval ? "/workout/interval" : "/workout/reps";
+        return `${base}?programId=${todayProgram.id}`;
+      })()
+    : "/workout/interval";
 
   if (!authLoading && !token && !isGuest) {
     return (
@@ -76,23 +82,16 @@ export default function HomePage() {
   return (
     <PhoneShell showNav>
       <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between px-6 pt-14 pb-4">
-          <span className="timer-font text-xl font-bold text-foreground">
-            Pace<span className="text-lime">Set</span>
-          </span>
-          <Link
-            href="/profile"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-surface app-card"
-          >
-            <User className="h-5 w-5 text-foreground" />
-          </Link>
-        </div>
+        <HomeHeader
+          title={t("today")}
+          subtitle={t("homeSubtitle")}
+          profileHref="/profile"
+          profileLabel={t("profile")}
+        />
 
-        <div className="flex flex-1 flex-col px-6 pb-6">
-          <h2 className="mb-6 text-2xl font-bold text-foreground">{t("today")}</h2>
-
+        <PageContent className="pb-6">
           {loading ? (
-            <div className="flex flex-1 items-center justify-center">
+            <div className="flex flex-1 items-center justify-center pt-4">
               <p className="text-sm text-muted">{t("loading")}</p>
             </div>
           ) : isGuest ? (
@@ -156,7 +155,7 @@ export default function HomePage() {
               </div>
             </div>
           )}
-        </div>
+        </PageContent>
       </div>
     </PhoneShell>
   );

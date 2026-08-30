@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { LoginPrompt, PageLoading } from "@/components/LoginPrompt";
+import { PageContent } from "@/components/PageContent";
+import { PageHeader } from "@/components/PageHeader";
 import { PhoneShell } from "@/components/PhoneShell";
 import { programsApi, scheduleApi } from "@/lib/api";
 import { apiDayToUiDay, estimateProgramMinutes, programModeLabel, uiDayToApiDay } from "@/lib/api/helpers";
@@ -98,24 +100,25 @@ export default function SchedulePage() {
   return (
     <PhoneShell showNav>
       <div className="flex h-full flex-col">
-        <div className="px-6 pt-14 pb-4">
-          <h2 className="text-2xl font-bold text-foreground">{t("weeklySchedule")}</h2>
-        </div>
+        <PageHeader
+          title={t("weeklySchedule")}
+          subtitle={t("scheduleSubtitle")}
+        />
 
-        <div className="flex min-h-0 flex-1 flex-col px-6">
+        <PageContent>
           {loading ? (
             <PageLoading />
           ) : !token ? (
             <LoginPrompt />
           ) : (
             <>
-              <div className="mb-8 flex justify-between">
+              <div className="mb-6 grid grid-cols-7 gap-2">
                 {days.map((d, i) => (
                   <button
                     key={d.key}
                     type="button"
                     onClick={() => setSelected(i)}
-                    className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold ${
+                    className={`mx-auto flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold ${
                       selected === i
                         ? "bg-lime text-white shadow-sm"
                         : "border border-border bg-surface text-foreground/65"
@@ -180,7 +183,7 @@ export default function SchedulePage() {
               ) : null}
             </>
           )}
-        </div>
+        </PageContent>
       </div>
     </PhoneShell>
   );

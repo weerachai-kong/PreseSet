@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { LoginPrompt, PageLoading } from "@/components/LoginPrompt";
+import { PageContent } from "@/components/PageContent";
+import { PageHeader, HeaderMeta } from "@/components/PageHeader";
 import { PhoneShell } from "@/components/PhoneShell";
 import { sessionsApi } from "@/lib/api";
 import {
@@ -45,20 +47,31 @@ export default function HistoryPage() {
   return (
     <PhoneShell showNav>
       <div className="flex h-full flex-col">
-        <div className="px-6 pt-14 pb-4">
-          <h2 className="text-2xl font-bold text-foreground">{t("history")}</h2>
-        </div>
+        <PageHeader
+          title={t("history")}
+          subtitle={t("historySubtitle")}
+          trailing={
+            !loading && token ? (
+              <HeaderMeta>{sessions.length}</HeaderMeta>
+            ) : null
+          }
+        />
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 pb-4">
+        <PageContent className="overflow-y-auto">
           {loading ? (
             <PageLoading />
           ) : !token ? (
             <LoginPrompt />
           ) : sessions.length === 0 ? (
-            <p className="text-sm text-muted">{t("noProgramAssigned")}</p>
+            <div className="rounded-2xl bg-surface app-card p-8 text-center">
+              <p className="text-base font-medium text-foreground">
+                {t("noProgramAssigned")}
+              </p>
+              <p className="mt-2 text-sm text-muted">{t("historySubtitle")}</p>
+            </div>
           ) : (
             sessions.map((item) => (
-              <div key={item.id} className="mb-3 rounded-xl bg-surface p-4 app-card">
+              <div key={item.id} className="mb-4 rounded-xl bg-surface p-4 app-card">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm font-bold text-foreground">
@@ -85,7 +98,7 @@ export default function HistoryPage() {
               </div>
             ))
           )}
-        </div>
+        </PageContent>
       </div>
     </PhoneShell>
   );

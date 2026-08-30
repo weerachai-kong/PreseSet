@@ -9,13 +9,21 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import {
+  type BeepSoundPreset,
+  isBeepSoundPreset,
+} from "@/lib/workout/workoutBeeps";
 
 const STORAGE_KEY = "paceset.settings";
+
+export type { BeepSoundPreset };
 
 export type WaterIntervalMinutes = 60 | 90 | 120;
 
 export type AppSettings = {
   beepEnabled: boolean;
+  beepVolume: number;
+  beepSoundPreset: BeepSoundPreset;
   waterReminderEnabled: boolean;
   waterReminderIntervalMinutes: WaterIntervalMinutes;
   displayName: string;
@@ -24,6 +32,8 @@ export type AppSettings = {
 
 const defaults: AppSettings = {
   beepEnabled: true,
+  beepVolume: 70,
+  beepSoundPreset: "classic",
   waterReminderEnabled: false,
   waterReminderIntervalMinutes: 60,
   displayName: "Athlete",
@@ -45,6 +55,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
       const parsed = JSON.parse(raw) as Partial<AppSettings>;
+      if (
+        parsed.beepSoundPreset &&
+        !isBeepSoundPreset(parsed.beepSoundPreset)
+      ) {
+        delete parsed.beepSoundPreset;
+      }
       setSettings((prev) => ({ ...prev, ...parsed }));
     } catch {
       /* ignore corrupt storage */

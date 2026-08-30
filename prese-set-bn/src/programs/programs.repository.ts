@@ -136,16 +136,9 @@ export class ProgramsRepository {
       if (dto.steps) {
         await tx.$executeRawUnsafe(
           `
-          UPDATE exercise_steps
-          SET
-            is_delete = true,
-            update_date = $1,
-            update_by = $2
-          WHERE program_id = $3
-            AND is_delete = false
+          DELETE FROM exercise_steps
+          WHERE program_id = $1
           `,
-          audit.updateDate,
-          audit.updateBy,
           id,
         );
         await this.insertSteps(tx, id, userId, dto.steps, audit.updateDate);
@@ -162,16 +155,9 @@ export class ProgramsRepository {
     await this.prisma.$transaction(async (tx) => {
       await tx.$executeRawUnsafe(
         `
-        UPDATE exercise_steps
-        SET
-          is_delete = true,
-          update_date = $1,
-          update_by = $2
-        WHERE program_id = $3
-          AND is_delete = false
+        DELETE FROM exercise_steps
+        WHERE program_id = $1
         `,
-        now,
-        userId,
         id,
       );
       await tx.$executeRawUnsafe(

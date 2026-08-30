@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { LoginPrompt, PageLoading } from "@/components/LoginPrompt";
+import { PageContent } from "@/components/PageContent";
+import { PageHeader } from "@/components/PageHeader";
 import { PhoneShell } from "@/components/PhoneShell";
 import { usersApi } from "@/lib/api";
 import { useAuth, getAuthErrorMessage } from "@/lib/auth/AuthContext";
@@ -13,10 +15,28 @@ import {
   type WaterIntervalMinutes,
 } from "@/lib/settings/SettingsContext";
 import {
+  BEEP_SOUND_PRESETS,
+  beepVolumeGain,
+  playPhaseEndBeeps,
+  playWorkoutCompleteBeeps,
+  primeWorkoutAudio,
+  type BeepSoundPreset,
+} from "@/lib/workout/workoutBeeps";
+import type { MessageKey } from "@/lib/i18n/dictionaries";
+import {
   ensureNotificationPermission,
   getNotificationPermission,
   showWaterNotification,
 } from "@/lib/water/WaterReminder";
+
+const BEEP_PRESET_LABELS: Record<BeepSoundPreset, MessageKey> = {
+  classic: "beepSoundClassic",
+  soft: "beepSoundSoft",
+  bell: "beepSoundBell",
+  whistle: "beepSoundWhistle",
+  chime: "beepSoundChime",
+  pulse: "beepSoundPulse",
+};
 
 export default function ProfilePage() {
   const { t } = useLocale();
@@ -25,6 +45,7 @@ export default function ProfilePage() {
   const { settings, updateSettings } = useSettings();
   const [permNote, setPermNote] = useState<string | null>(null);
   const [testNote, setTestNote] = useState<string | null>(null);
+  const [beepTestNote, setBeepTestNote] = useState<string | null>(null);
   const [showTestPreview, setShowTestPreview] = useState(false);
   const [displayNameDraft, setDisplayNameDraft] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -137,6 +158,30 @@ export default function ProfilePage() {
     window.setTimeout(() => setShowTestPreview(false), 6000);
   };
 
+  const onTestBeep = (kind: "WORK" | "REST" | "COMPLETE") => {
+    setBeepTestNote(null);
+    primeWorkoutAudio();
+    const gain = beepVolumeGain(settings.beepVolume);
+    const preset = settings.beepSoundPreset;
+    if (kind === "COMPLETE") {
+      playWorkoutCompleteBeeps(gain, preset);
+    } else {
+      playPhaseEndBeeps(kind, gain, preset);
+    }
+    setBeepTestNote(t("beepTestSent"));
+    window.setTimeout(() => setBeepTestNote(null), 4000);
+  };
+
+  const onSelectBeepPreset = (preset: BeepSoundPreset) => {
+    updateSettings({ beepSoundPreset: preset });
+    primeWorkoutAudio();
+    playPhaseEndBeeps(
+      "WORK",
+      beepVolumeGain(settings.beepVolume),
+      preset,
+    );
+  };
+
   const onLogout = () => {
     logout();
     router.push("/welcome");
@@ -145,16 +190,24 @@ export default function ProfilePage() {
   return (
     <PhoneShell showNav>
       <div className="flex h-full flex-col">
-        <div className="px-6 pt-14 pb-4">
-          <h2 className="text-2xl font-bold text-foreground">{t("profile")}</h2>
-        </div>
+        <PageHeader
+          title={t("profile")}
+          subtitle={t("profileSubtitle")}
+          trailing={
+            user?.displayName ? (
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-muted text-xs font-semibold text-foreground/70">
+                {user.displayName.charAt(0).toUpperCase()}
+              </span>
+            ) : null
+          }
+        />
 
         {authLoading ? (
           <PageLoading />
         ) : !token ? (
           <LoginPrompt />
         ) : (
-        <div className="flex-1 space-y-6 overflow-y-auto px-6 pb-8">
+        <PageContent className="space-y-6 overflow-y-auto">
           {saveError ? (
             <p className="text-xs text-danger">{saveError}</p>
           ) : null}
@@ -188,18 +241,99 @@ export default function ProfilePage() {
             onLocaleChange={(next) => syncToApi({ locale: next })}
           />
 
-          <label className="flex items-center justify-between rounded-xl border border-border bg-surface app-card px-4 py-3">
-            <span className="pr-4 text-sm text-foreground">{t("audioBeeps")}</span>
-            <input
-              type="checkbox"
-              checked={settings.beepEnabled}
-              onChange={(e) => {
-                updateSettings({ beepEnabled: e.target.checked });
-                syncToApi({ beepEnabled: e.target.checked });
-              }}
-              className="h-5 w-5 accent-lime"
-            />
-          </label>
+          <div className="space-y-3 rounded-xl border border-border bg-surface app-card p-4">
+            <label className="flex items-center justify-between">
+              <div className="pr-4">
+                <p className="text-sm font-medium text-foreground">
+                  {t("soundSettings")}
+                </p>
+                <p className="mt-1 text-sm text-muted">{t("soundSettingsDesc")}</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={settings.beepEnabled}
+                onChange={(e) => {
+                  updateSettings({ beepEnabled: e.target.checked });
+                  syncToApi({ beepEnabled: e.target.checked });
+                }}
+                className="h-5 w-5 accent-lime"
+              />
+            </label>
+
+            {settings.beepEnabled ? (
+              <>
+                <div>
+                  <p className="mb-2 text-sm font-medium text-foreground/80">
+                    {t("beepSoundStyle")}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {BEEP_SOUND_PRESETS.map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => onSelectBeepPreset(preset)}
+                        className={`rounded-lg px-2 py-2.5 text-xs font-bold ${
+                          settings.beepSoundPreset === preset
+                            ? "bg-lime text-white"
+                            : "bg-surface-muted text-muted"
+                        }`}
+                      >
+                        {t(BEEP_PRESET_LABELS[preset])}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="text-sm font-medium text-foreground/80">
+                      {t("beepVolume")}
+                    </p>
+                    <span className="text-xs text-muted">{settings.beepVolume}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={settings.beepVolume}
+                    onChange={(e) =>
+                      updateSettings({ beepVolume: Number(e.target.value) })
+                    }
+                    className="w-full accent-lime"
+                  />
+                </div>
+
+                <div className="space-y-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => onTestBeep("WORK")}
+                    className="w-full rounded-lg border border-lime/40 py-2.5 text-sm font-medium text-lime"
+                  >
+                    {t("beepTestWork")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onTestBeep("REST")}
+                    className="w-full rounded-lg border border-lime/40 py-2.5 text-sm font-medium text-lime"
+                  >
+                    {t("beepTestRest")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onTestBeep("COMPLETE")}
+                    className="w-full rounded-lg border border-lime/40 py-2.5 text-sm font-medium text-lime"
+                  >
+                    {t("beepTestComplete")}
+                  </button>
+                </div>
+
+                {beepTestNote ? (
+                  <p className="text-xs text-lime">{beepTestNote}</p>
+                ) : null}
+              </>
+            ) : null}
+          </div>
 
           <div className="space-y-3 rounded-xl border border-border bg-surface app-card p-4">
             <label className="flex items-center justify-between">
@@ -298,7 +432,7 @@ export default function ProfilePage() {
           >
             {t("logOut")}
           </button>
-        </div>
+        </PageContent>
         )}
       </div>
     </PhoneShell>
