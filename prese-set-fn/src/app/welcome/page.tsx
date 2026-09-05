@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useSyncExternalStore } from "react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { PhoneShell } from "@/components/PhoneShell";
 import { authApi } from "@/lib/api";
@@ -12,17 +12,52 @@ import { useLocale } from "@/lib/i18n/LocaleContext";
 
 type Mode = "login" | "register" | "reset";
 
+const REMEMBER_FLAG_KEY = "paceset_remember_me";
+const REMEMBER_EMAIL_KEY = "paceset_remember_email";
+
 const DEV_LOGIN =
   process.env.NODE_ENV === "development"
     ? { email: "admin@paceset.app", password: "PassW0rd!" }
     : { email: "", password: "" };
 
+function subscribeRememberStore(onChange: () => void) {
+  window.addEventListener("storage", onChange);
+  return () => window.removeEventListener("storage", onChange);
+}
+
+/** Stable string snapshot: "1:email" or "0:" */
+function getRememberSnapshot() {
+  const flag = window.localStorage.getItem(REMEMBER_FLAG_KEY) === "1" ? "1" : "0";
+  const email = window.localStorage.getItem(REMEMBER_EMAIL_KEY) ?? "";
+  return `${flag}:${email}`;
+}
+
+function getRememberServerSnapshot() {
+  return "0:";
+}
+
+function parseRememberSnapshot(raw: string) {
+  const sep = raw.indexOf(":");
+  const flag = raw.slice(0, sep) === "1";
+  const email = raw.slice(sep + 1);
+  return { flag, email: email || null };
+}
+
 export default function WelcomePage() {
   const { t } = useLocale();
   const router = useRouter();
   const { login, register, enterGuest, isLoading } = useAuth();
+  const remembered = parseRememberSnapshot(
+    useSyncExternalStore(
+      subscribeRememberStore,
+      getRememberSnapshot,
+      getRememberServerSnapshot,
+    ),
+  );
+
   const [mode, setMode] = useState<Mode>("login");
-  const [email, setEmail] = useState(DEV_LOGIN.email);
+  const [emailDraft, setEmailDraft] = useState<string | null>(null);
+  const [rememberDraft, setRememberDraft] = useState<boolean | null>(null);
   const [password, setPassword] = useState(DEV_LOGIN.password);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -30,6 +65,21 @@ export default function WelcomePage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const email =
+    emailDraft ??
+    (remembered.flag && remembered.email ? remembered.email : DEV_LOGIN.email);
+  const rememberMe = rememberDraft ?? remembered.flag;
+
+  const persistRememberMe = (nextEmail: string, enabled: boolean) => {
+    if (enabled) {
+      window.localStorage.setItem(REMEMBER_FLAG_KEY, "1");
+      window.localStorage.setItem(REMEMBER_EMAIL_KEY, nextEmail.trim());
+    } else {
+      window.localStorage.removeItem(REMEMBER_FLAG_KEY);
+      window.localStorage.removeItem(REMEMBER_EMAIL_KEY);
+    }
+  };
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -51,8 +101,10 @@ export default function WelcomePage() {
       }
       if (mode === "login") {
         await login(email, password);
+        persistRememberMe(email, rememberMe);
       } else {
         await register(email, password, displayName || "Athlete");
+        persistRememberMe(email, rememberMe);
       }
       router.push("/home");
     } catch (err) {
@@ -102,10 +154,16 @@ export default function WelcomePage() {
         {isLoading ? (
           <p className="text-sm text-muted">{t("loading")}</p>
         ) : (
-          <form onSubmit={onSubmit} className="w-full space-y-3 text-left">
+          <form
+            onSubmit={onSubmit}
+            className="w-full space-y-3 text-left"
+            autoComplete="on"
+          >
             {mode === "register" ? (
               <input
                 type="text"
+                name="name"
+                autoComplete="name"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder={t("displayName")}
@@ -114,17 +172,23 @@ export default function WelcomePage() {
             ) : null}
             <input
               type="email"
+              name="email"
               required
+              autoComplete="username"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmailDraft(e.target.value)}
               placeholder={t("email")}
               className="app-input"
             />
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
+                name="password"
                 required
                 minLength={6}
+                autoComplete={
+                  mode === "login" ? "current-password" : "new-password"
+                }
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={
@@ -148,13 +212,35 @@ export default function WelcomePage() {
             {mode === "reset" ? (
               <input
                 type={showPassword ? "text" : "password"}
+                name="confirmPassword"
                 required
                 minLength={6}
+                autoComplete="new-password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder={t("confirmPassword")}
                 className="app-input"
               />
+            ) : null}
+            {mode === "login" ? (
+              <div className="flex items-center justify-between gap-3 px-0.5 py-1">
+                <label className="flex cursor-pointer items-center gap-2 text-sm text-muted">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberDraft(e.target.checked)}
+                    className="h-4 w-4 rounded border-border accent-[var(--lime)]"
+                  />
+                  <span>{t("rememberMe")}</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => switchMode("reset")}
+                  className="shrink-0 text-sm text-muted underline"
+                >
+                  {t("forgotPassword")}
+                </button>
+              </div>
             ) : null}
             {error ? (
               <p className="text-xs leading-relaxed text-danger">{error}</p>
@@ -177,16 +263,6 @@ export default function WelcomePage() {
             </button>
           </form>
         )}
-
-        {mode === "login" ? (
-          <button
-            type="button"
-            onClick={() => switchMode("reset")}
-            className="mt-3 text-sm text-muted underline"
-          >
-            {t("forgotPassword")}
-          </button>
-        ) : null}
 
         {mode === "reset" ? (
           <button
