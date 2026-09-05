@@ -52,7 +52,10 @@ export class ScheduleRepository {
     return rows.map(mapSchedule);
   }
 
-  async findToday(userId: string, dayOfWeek: number): Promise<ScheduleView | null> {
+  async findToday(
+    userId: string,
+    dayOfWeek: number,
+  ): Promise<ScheduleView | null> {
     const rows = await this.prisma.$queryRawUnsafe<ScheduleRow[]>(
       `
       SELECT
@@ -139,6 +142,7 @@ export class ScheduleRepository {
   }
 
   async softDeleteByDay(userId: string, dayOfWeek: number): Promise<boolean> {
+    const audit = auditUpdate(userId);
     const result = await this.prisma.$executeRawUnsafe(
       `
       UPDATE program_days
@@ -150,11 +154,11 @@ export class ScheduleRepository {
         AND day_of_week = $4
         AND is_delete = false
       `,
-      new Date(),
+      audit.updateDate,
+      audit.updateBy,
       userId,
       dayOfWeek,
     );
-    // $executeRawUnsafe returns number of rows in Prisma
     return Number(result) > 0;
   }
 }

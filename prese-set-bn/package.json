@@ -23,7 +23,8 @@
     "prisma:studio": "prisma studio",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
-    "seed:dev-user": "ts-node -r tsconfig-paths/register scripts/seed-dev-user.ts"
+    "seed:dev-user": "ts-node -r tsconfig-paths/register scripts/seed-dev-user.ts",
+    "reset:password": "ts-node -r tsconfig-paths/register scripts/reset-password.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

@@ -8,6 +8,7 @@ import { PageContent } from "@/components/PageContent";
 import { PageHeader } from "@/components/PageHeader";
 import { PhoneShell } from "@/components/PhoneShell";
 import { usersApi } from "@/lib/api";
+import { APP_VERSION } from "@/lib/appVersion";
 import { useAuth, getAuthErrorMessage } from "@/lib/auth/AuthContext";
 import { useLocale } from "@/lib/i18n/LocaleContext";
 import {
@@ -432,6 +433,10 @@ export default function ProfilePage() {
           >
             {t("logOut")}
           </button>
+
+          <p className="pb-2 text-center text-[11px] text-muted/70">
+            {APP_VERSION}
+          </p>
         </PageContent>
         )}
       </div>

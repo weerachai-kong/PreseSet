@@ -1,0 +1,44 @@
+---
+description: Keep PaceSet FN UI patterns consistent (delete, dialogs, shell)
+globs: prese-set-fn/**/*.{tsx,ts,css}
+alwaysApply: false
+---
+
+# PaceSet Frontend UI Consistency
+
+Before inventing a new control, reuse existing components. Same action = same component.
+
+## Delete / remove
+
+- **Always** use `DeleteIconButton` (red trash icon) — never a full-width red/outline text button for delete.
+- **Always** confirm with `ConfirmDialog` before destructive API calls.
+- Place the trash icon on the card/row (same pattern as Programs list).
+
+```tsx
+import { DeleteIconButton } from "@/components/DeleteIconButton";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+```
+
+## Shared building blocks
+
+| Need | Use |
+|------|-----|
+| Page chrome + bottom tabs | `PhoneShell` (`showNav` when needed) |
+| Title / subtitle | `PageHeader` |
+| Scrollable body padding | `PageContent` |
+| Delete affordance | `DeleteIconButton` |
+| Confirm delete / leave / save | `ConfirmDialog` |
+| Language toggle | `LanguageSwitcher` (`compact` on welcome) |
+| App version label | `APP_VERSION` from `@/lib/appVersion` |
+
+## Do not
+
+- Create one-off delete buttons (big red text, grey bordered danger buttons).
+- Skip confirm dialogs for delete/remove of user data.
+- Duplicate dialog markup — extend `ConfirmDialog` if needed.
+
+## When adding a new screen
+
+1. Check `prese-set-fn/src/components/` for an existing pattern.
+2. Match Programs / Schedule / Profile spacing and button hierarchy (primary = lime full-width; danger = trash icon only).
+3. If you must invent UI, add or update a shared component first, then use it in the page.

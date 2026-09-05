@@ -1,12 +1,13 @@
 import {
   ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersRepository } from '../users/users.repository';
-import { LoginDto, RegisterDto } from './dto/auth.dto';
+import { LoginDto, RegisterDto, ResetPasswordDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -40,6 +41,17 @@ export class AuthService {
     if (!ok) throw new UnauthorizedException('Invalid credentials');
 
     return this.tokenResponse(user.id, user.email, user.displayName);
+  }
+
+  /** MVP: set a new password by email (no email verification yet). */
+  async resetPassword(dto: ResetPasswordDto) {
+    const email = dto.email.toLowerCase();
+    const user = await this.usersRepo.findAuthByEmail(email);
+    if (!user) throw new NotFoundException('Account not found');
+
+    const passwordHash = await bcrypt.hash(dto.newPassword, 10);
+    await this.usersRepo.updatePasswordByEmail(email, passwordHash);
+    return { ok: true };
   }
 
   private tokenResponse(id: string, email: string, displayName: string) {

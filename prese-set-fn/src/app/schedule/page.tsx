@@ -1,14 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { DeleteIconButton } from "@/components/DeleteIconButton";
 import { LoginPrompt, PageLoading } from "@/components/LoginPrompt";
 import { PageContent } from "@/components/PageContent";
 import { PageHeader } from "@/components/PageHeader";
 import { PhoneShell } from "@/components/PhoneShell";
 import { programsApi, scheduleApi } from "@/lib/api";
-import { apiDayToUiDay, estimateProgramMinutes, programModeLabel, uiDayToApiDay } from "@/lib/api/helpers";
+import {
+  apiDayToUiDay,
+  estimateProgramMinutes,
+  programModeLabel,
+  uiDayToApiDay,
+} from "@/lib/api/helpers";
 import type { Program, ScheduleEntry } from "@/lib/api/types";
-import { useAuth } from "@/lib/auth/AuthContext";
+import { useAuth, getAuthErrorMessage } from "@/lib/auth/AuthContext";
 import { useLocale } from "@/lib/i18n/LocaleContext";
 
 const days = [
@@ -36,6 +43,9 @@ export default function SchedulePage() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [loadedToken, setLoadedToken] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState<string | null>(null);
 
   const day = days[selected];
   const apiDay = uiDayToApiDay(selected);
@@ -97,6 +107,24 @@ export default function SchedulePage() {
     }
   };
 
+  const removeProgram = async () => {
+    if (!token || !entry) return;
+    setRemoving(true);
+    setRemoveError(null);
+    try {
+      await scheduleApi.remove(token, apiDay);
+      setSchedule((prev) => prev.filter((s) => s.dayOfWeek !== apiDay));
+      setPickerOpen(false);
+      setConfirmRemove(false);
+    } catch (err) {
+      setRemoveError(getAuthErrorMessage(err));
+    } finally {
+      setRemoving(false);
+    }
+  };
+
+  const dayLabel = locale === "th" ? day.labelTh : day.labelEn;
+
   return (
     <PhoneShell showNav>
       <div className="flex h-full flex-col">
@@ -129,23 +157,35 @@ export default function SchedulePage() {
                 ))}
               </div>
 
-              <div className="rounded-2xl bg-surface p-6 app-card">
-                <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-foreground/70">
-                  {locale === "th" ? day.labelTh : day.labelEn}
-                </p>
+              <div className="flex items-center gap-2 rounded-2xl bg-surface p-6 app-card">
+                <div className="min-w-0 flex-1">
+                  <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-foreground/70">
+                    {dayLabel}
+                  </p>
+                  {assigned ? (
+                    <>
+                      <p className="text-lg font-bold text-foreground">
+                        {assigned.name}
+                      </p>
+                      <p className="mt-1 text-sm text-muted">
+                        {programModeLabel(assigned.mode, t)} · {durationMin}{" "}
+                        {t("minutes")}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-muted">{t("noProgramAssigned")}</p>
+                  )}
+                </div>
                 {assigned ? (
-                  <>
-                    <p className="text-lg font-bold text-foreground">
-                      {assigned.name}
-                    </p>
-                    <p className="mt-1 text-sm text-muted">
-                      {programModeLabel(assigned.mode, t)} · {durationMin}{" "}
-                      {t("minutes")}
-                    </p>
-                  </>
-                ) : (
-                  <p className="text-sm text-muted">{t("noProgramAssigned")}</p>
-                )}
+                  <DeleteIconButton
+                    label={t("removeProgram")}
+                    disabled={saving || removing}
+                    onClick={() => {
+                      setConfirmRemove(true);
+                      setRemoveError(null);
+                    }}
+                  />
+                ) : null}
               </div>
 
               <button
@@ -177,7 +217,7 @@ export default function SchedulePage() {
                     onClick={() => setPickerOpen(false)}
                     className="w-full py-2 text-sm font-medium text-muted"
                   >
-                    Cancel
+                    {t("cancel")}
                   </button>
                 </div>
               ) : null}
@@ -185,6 +225,25 @@ export default function SchedulePage() {
           )}
         </PageContent>
       </div>
+
+      <ConfirmDialog
+        open={confirmRemove && assigned !== null}
+        title={t("deleteConfirmTitle")}
+        itemName={assigned?.name ?? ""}
+        promptBefore={t("deleteConfirmPromptBefore")}
+        promptAfter={t("deleteConfirmPromptAfter")}
+        confirmLabel={t("removeProgram")}
+        cancelLabel={t("cancel")}
+        loading={removing}
+        loadingLabel={t("loading")}
+        error={removeError}
+        onConfirm={() => void removeProgram()}
+        onCancel={() => {
+          if (removing) return;
+          setConfirmRemove(false);
+          setRemoveError(null);
+        }}
+      />
     </PhoneShell>
   );
 }
