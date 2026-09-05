@@ -23,6 +23,9 @@ export const authApi = {
   login(body: { email: string; password: string }) {
     return apiPost<AuthResponse>("/auth/login", body);
   },
+  resetPassword(body: { email: string; newPassword: string }) {
+    return apiPost<{ ok: boolean }>("/auth/reset-password", body);
+  },
 };
 
 export const usersApi = {

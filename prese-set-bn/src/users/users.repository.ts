@@ -129,6 +129,29 @@ export class UsersRepository {
     return { id, email: input.email, displayName: input.displayName };
   }
 
+  async updatePasswordByEmail(
+    email: string,
+    passwordHash: string,
+  ): Promise<boolean> {
+    const audit = auditUpdate(email);
+    const result = await this.prisma.$executeRawUnsafe(
+      `
+      UPDATE users
+      SET
+        password_hash = $1,
+        update_date = $2,
+        update_by = $3
+      WHERE email = $4
+        AND is_delete = false
+      `,
+      passwordHash,
+      audit.updateDate,
+      audit.updateBy,
+      email,
+    );
+    return Number(result) > 0;
+  }
+
   async updateProfile(
     userId: string,
     dto: UpdateProfileDto,

@@ -1,5 +1,5 @@
 import { Barlow_Condensed, Fira_Sans } from "next/font/google";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Providers } from "@/components/Providers";
 import "./globals.css";
 
@@ -18,6 +18,12 @@ const barlow = Barlow_Condensed({
 export const metadata: Metadata = {
   title: "PaceSet",
   description: "Control your pace. Own every set.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

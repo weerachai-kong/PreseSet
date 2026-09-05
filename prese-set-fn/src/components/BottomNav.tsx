@@ -18,7 +18,7 @@ export function BottomNav() {
   const { t } = useLocale();
 
   return (
-    <nav className="absolute bottom-0 left-0 right-0 border-t border-border bg-surface px-2 py-2 shadow-[0_-4px_16px_rgba(26,35,50,0.06)]">
+    <nav className="shrink-0 border-t border-border bg-surface px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] shadow-[0_-4px_16px_rgba(26,35,50,0.06)]">
       <div className="flex justify-around">
         {items.map(({ href, icon: Icon, labelKey }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);
