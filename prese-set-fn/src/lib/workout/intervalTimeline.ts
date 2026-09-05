@@ -5,6 +5,7 @@ export type IntervalPhase = "WORK" | "REST";
 
 export type WorkoutSegment = {
   phase: IntervalPhase;
+  /** Timed length, or estimate used for progress when `awaitConfirm` is true. */
   durationSec: number;
   stepTitle: string;
   stepOrder: number;
@@ -13,6 +14,9 @@ export type WorkoutSegment = {
   totalRounds: number;
   /** Shown during reps work phases, e.g. "12 reps". */
   repsLabel?: string;
+  repsTarget?: number;
+  /** User must tap Complete Set — no countdown / no auto-advance. */
+  awaitConfirm?: boolean;
 };
 
 /** @deprecated alias */
@@ -56,19 +60,23 @@ export function buildWorkoutTimeline(steps: ExerciseStep[]): WorkoutSegment[] {
 
     if (kind === "REPS_SETS" && step.reps != null && step.sets != null) {
       const sets = Math.max(1, step.sets);
-      const work = Math.max(1, step.workSeconds ?? 45);
+      const reps = Math.max(1, step.reps);
       const rest = Math.max(0, step.restBetweenSetsSeconds ?? 30);
+      // Progress estimate only — work phase is manual confirm, not a timer.
+      const estimateWork = Math.max(1, step.workSeconds ?? reps * 4);
 
       for (let set = 1; set <= sets; set++) {
         segments.push({
           phase: "WORK",
-          durationSec: work,
+          durationSec: estimateWork,
+          awaitConfirm: true,
           stepTitle: step.title,
           stepOrder: step.order,
           stepKind: "REPS_SETS",
           round: set,
           totalRounds: sets,
-          repsLabel: `${step.reps} reps`,
+          repsLabel: `${reps} reps`,
+          repsTarget: reps,
         });
         if (set < sets && rest > 0) {
           segments.push({
@@ -119,7 +127,9 @@ export function remainingTotalSeconds(
   segmentIndex: number,
   secondsLeft: number,
 ): number {
-  let rem = secondsLeft;
+  const current = timeline[segmentIndex];
+  if (!current) return 0;
+  let rem = current.awaitConfirm ? current.durationSec : secondsLeft;
   for (let i = segmentIndex + 1; i < timeline.length; i++) {
     rem += timeline[i].durationSec;
   }
@@ -131,6 +141,12 @@ export function completedSeconds(
   segmentIndex: number,
   secondsLeft: number,
 ): number {
-  const total = totalTimelineSeconds(timeline);
-  return total - remainingTotalSeconds(timeline, segmentIndex, secondsLeft);
+  let done = 0;
+  for (let i = 0; i < segmentIndex; i++) {
+    done += timeline[i].durationSec;
+  }
+  const current = timeline[segmentIndex];
+  if (!current) return done;
+  if (current.awaitConfirm) return done;
+  return done + Math.max(0, current.durationSec - secondsLeft);
 }

@@ -95,7 +95,7 @@ function IntervalWorkoutContent() {
       : 0;
 
   const setSegmentAt = useCallback(
-    (idx: number) => {
+    (idx: number, opts?: { autoRunRest?: boolean }) => {
       const seg = timeline[idx];
       if (seg) {
         setStepResumeIndex((prev) => ({
@@ -104,7 +104,15 @@ function IntervalWorkoutContent() {
         }));
       }
       setSegmentIndex(idx);
-      setSecondsLeft(timeline[idx]?.durationSec ?? 0);
+      if (seg?.awaitConfirm) {
+        setSecondsLeft(0);
+        setPaused(true);
+      } else {
+        setSecondsLeft(seg?.durationSec ?? 0);
+        if (opts?.autoRunRest && seg?.phase === "REST") {
+          setPaused(false);
+        }
+      }
     },
     [timeline],
   );
@@ -140,25 +148,64 @@ function IntervalWorkoutContent() {
     [timeline],
   );
 
-  const advanceSegment = useCallback(() => {
-    setSegmentIndex((idx) => {
-      markStepCompleteIfNeeded(idx);
-      const next = idx + 1;
-      if (next >= timeline.length) {
-        setFinished(true);
-        return idx;
-      }
-      const seg = timeline[next];
-      if (seg) {
-        setStepResumeIndex((prev) => ({
-          ...prev,
-          [seg.stepOrder]: next,
-        }));
-      }
-      setSecondsLeft(timeline[next].durationSec);
-      return next;
-    });
-  }, [timeline, markStepCompleteIfNeeded]);
+  const advanceSegment = useCallback(
+    (opts?: { autoRunRest?: boolean }) => {
+      setSegmentIndex((idx) => {
+        markStepCompleteIfNeeded(idx);
+        const next = idx + 1;
+        if (next >= timeline.length) {
+          setFinished(true);
+          return idx;
+        }
+        const seg = timeline[next];
+        if (seg) {
+          setStepResumeIndex((prev) => ({
+            ...prev,
+            [seg.stepOrder]: next,
+          }));
+        }
+        if (seg?.awaitConfirm) {
+          setSecondsLeft(0);
+          setPaused(true);
+        } else {
+          setSecondsLeft(seg?.durationSec ?? 0);
+          if (opts?.autoRunRest && seg?.phase === "REST") {
+            setPaused(false);
+          }
+        }
+        return next;
+      });
+    },
+    [timeline, markStepCompleteIfNeeded],
+  );
+
+  const ensureWorkoutStarted = useCallback(() => {
+    if (!workoutStartedAtRef.current) {
+      workoutStartedAtRef.current = new Date();
+    }
+  }, []);
+
+  const onCompleteSet = useCallback(() => {
+    if (finished || !current?.awaitConfirm) return;
+    primeWorkoutAudio();
+    ensureWorkoutStarted();
+    if (segmentIndex >= timeline.length - 1) {
+      markStepCompleteIfNeeded(segmentIndex);
+      setFinished(true);
+      return;
+    }
+    markStepCompleteIfNeeded(segmentIndex);
+    const next = segmentIndex + 1;
+    setSegmentAt(next, { autoRunRest: true });
+  }, [
+    finished,
+    current,
+    segmentIndex,
+    timeline.length,
+    markStepCompleteIfNeeded,
+    setSegmentAt,
+    ensureWorkoutStarted,
+  ]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -195,7 +242,7 @@ function IntervalWorkoutContent() {
         const first = built[0];
         setStepResumeIndex(first ? { [first.stepOrder]: 0 } : {});
         setSegmentIndex(0);
-        setSecondsLeft(first?.durationSec ?? 0);
+        setSecondsLeft(first?.awaitConfirm ? 0 : (first?.durationSec ?? 0));
         setPaused(true);
         setFinished(false);
         prevSegmentRef.current = null;
@@ -255,7 +302,16 @@ function IntervalWorkoutContent() {
   }, [finished, settings.beepEnabled, settings.beepVolume, settings.beepSoundPreset]);
 
   useEffect(() => {
-    if (loading || paused || finished || !current || secondsLeft <= 0) return;
+    if (
+      loading ||
+      paused ||
+      finished ||
+      !current ||
+      current.awaitConfirm ||
+      secondsLeft <= 0
+    ) {
+      return;
+    }
 
     const id = window.setInterval(() => {
       setSecondsLeft((prev) => {
@@ -315,11 +371,14 @@ function IntervalWorkoutContent() {
 
   useEffect(() => {
     if (loading || paused || finished || secondsLeft > 0) return;
+    if (current?.awaitConfirm) return;
     queueMicrotask(() => advanceSegment());
-  }, [loading, paused, finished, secondsLeft, advanceSegment]);
+  }, [loading, paused, finished, secondsLeft, current, advanceSegment]);
 
   const onSkip = () => {
     if (finished || timeline.length === 0) return;
+    primeWorkoutAudio();
+    ensureWorkoutStarted();
     if (segmentIndex >= timeline.length - 1) {
       markStepCompleteIfNeeded(segmentIndex);
       setFinished(true);
@@ -327,7 +386,9 @@ function IntervalWorkoutContent() {
     }
     markStepCompleteIfNeeded(segmentIndex);
     const next = segmentIndex + 1;
-    setSegmentAt(next);
+    setSegmentAt(next, {
+      autoRunRest: current?.awaitConfirm === true,
+    });
   };
 
   if (authLoading || loading) {
@@ -359,13 +420,16 @@ function IntervalWorkoutContent() {
     );
   }
 
+  const isManualSet = Boolean(current?.awaitConfirm);
   const phaseLabel = current?.phase === "REST" ? t("rest") : t("work");
   const roundLabel =
     current?.stepKind === "REPS_SETS"
-      ? `${current.round} / ${current.totalRounds} ${t("setsCount")}`
+      ? `${current.round} / ${current.totalRounds}`
       : current
         ? `${current.round} / ${current.totalRounds}`
         : "—";
+  const roundCaption =
+    current?.stepKind === "REPS_SETS" ? t("setsCount") : t("rounds");
 
   return (
     <div className="flex h-full min-h-0 flex-col px-6 pt-8 pb-6">
@@ -378,23 +442,46 @@ function IntervalWorkoutContent() {
           <span className="inline-block rounded-xl bg-lime px-3 py-1 text-xs font-bold text-white">
             {phaseLabel}
           </span>
-          <div className="timer-font mt-1 text-5xl font-extrabold text-accent-dark">
-            {formatClock(secondsLeft)}
-          </div>
-          <p className="mt-1 text-sm font-medium text-foreground">
-            {current?.stepTitle}
-          </p>
-          {current?.phase === "WORK" && current.repsLabel ? (
-            <p className="mt-0.5 text-xs font-semibold text-lime">
-              {current.repsLabel}
-            </p>
-          ) : null}
+
+          {isManualSet ? (
+            <>
+              <p className="mt-3 text-sm font-medium text-foreground">
+                {current?.stepTitle}
+              </p>
+              <div className="timer-font mt-2 text-4xl font-extrabold text-foreground">
+                {t("setProgress")
+                  .replace("{current}", String(current?.round ?? 0))
+                  .replace("{total}", String(current?.totalRounds ?? 0))}
+              </div>
+              <div className="timer-font mt-1 text-6xl font-extrabold text-accent-dark">
+                {current?.repsTarget ?? "—"}
+              </div>
+              <p className="mt-1 text-xs font-bold uppercase tracking-wide text-lime">
+                {t("repsTarget")}
+              </p>
+              <p className="mt-2 text-xs text-muted">{t("repsSetHint")}</p>
+            </>
+          ) : (
+            <>
+              <div className="timer-font mt-1 text-5xl font-extrabold text-accent-dark">
+                {formatClock(secondsLeft)}
+              </div>
+              <p className="mt-1 text-sm font-medium text-foreground">
+                {current?.stepTitle}
+              </p>
+              {current?.phase === "WORK" && current.repsLabel ? (
+                <p className="mt-0.5 text-xs font-semibold text-lime">
+                  {current.repsLabel}
+                </p>
+              ) : null}
+            </>
+          )}
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-2">
           <div className="rounded-xl bg-surface-muted p-2.5 text-center">
             <p className="text-sm font-bold text-foreground">{roundLabel}</p>
-            <p className="text-[10px] text-muted">{t("rounds")}</p>
+            <p className="text-[10px] text-muted">{roundCaption}</p>
           </div>
           <div className="rounded-xl bg-surface-muted p-2.5 text-center">
             <p className="text-sm font-bold text-foreground">
@@ -474,41 +561,68 @@ function IntervalWorkoutContent() {
             style={{ width: `${progress}%` }}
           />
         </div>
-        <div className="flex justify-center gap-6">
-          <Link
-            href="/home"
-            className="flex h-14 w-14 items-center justify-center rounded-full bg-surface app-card"
-          >
-            <Square className="h-5 w-5 text-muted" />
-          </Link>
-          <button
-            type="button"
-            onClick={() => {
-              primeWorkoutAudio();
-              setPaused((p) => {
-                if (p && !workoutStartedAtRef.current) {
-                  workoutStartedAtRef.current = new Date();
-                }
-                return !p;
-              });
-            }}
-            className="flex h-16 w-16 items-center justify-center rounded-full bg-lime app-card"
-          >
-            {paused ? (
-              <Play className="h-7 w-7 text-white" />
-            ) : (
-              <Pause className="h-7 w-7 text-white" />
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={onSkip}
-            className="flex h-14 w-14 items-center justify-center rounded-full bg-surface app-card"
-            aria-label={t("skip")}
-          >
-            <SkipForward className="h-5 w-5 text-muted" />
-          </button>
-        </div>
+
+        {isManualSet ? (
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={onCompleteSet}
+              className="block w-full rounded-xl bg-lime py-4 text-center text-lg font-bold text-white"
+            >
+              {t("completeSet")}
+            </button>
+            <div className="flex items-center justify-center gap-6">
+              <Link href="/home" className="text-sm font-medium text-muted">
+                {t("backHome")}
+              </Link>
+              <button
+                type="button"
+                onClick={onSkip}
+                className="text-sm font-medium text-muted"
+              >
+                {t("skip")}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex justify-center gap-6">
+            <Link
+              href="/home"
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-surface app-card"
+            >
+              <Square className="h-5 w-5 text-muted" />
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                primeWorkoutAudio();
+                setPaused((p) => {
+                  if (p && !workoutStartedAtRef.current) {
+                    workoutStartedAtRef.current = new Date();
+                  }
+                  return !p;
+                });
+              }}
+              className="flex h-16 w-16 items-center justify-center rounded-full bg-lime app-card"
+            >
+              {paused ? (
+                <Play className="h-7 w-7 text-white" />
+              ) : (
+                <Pause className="h-7 w-7 text-white" />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={onSkip}
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-surface app-card"
+              aria-label={
+                current?.phase === "REST" ? t("skipRest") : t("skip")
+              }
+            >
+              <SkipForward className="h-5 w-5 text-muted" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
