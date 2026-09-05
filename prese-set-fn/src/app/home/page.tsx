@@ -83,18 +83,18 @@ export default function HomePage() {
           profileLabel={t("profile")}
         />
 
-        <PageContent className="pb-6">
+        <PageContent className="pt-4 pb-6">
           {loading ? (
-            <div className="flex flex-1 items-center justify-center pt-4">
-              <p className="text-sm text-muted">{t("loading")}</p>
-            </div>
+            <p className="pt-2 text-sm text-muted">{t("loading")}</p>
           ) : isGuest ? (
-            <div className="flex flex-1 flex-col justify-center space-y-4">
-              <div className="rounded-2xl bg-surface p-6 app-card">
+            <div className="space-y-4">
+              <div className="rounded-2xl bg-surface p-5 app-card">
                 <p className="text-base font-medium text-foreground">
                   {t("guestHomeTitle")}
                 </p>
-                <p className="mt-2 text-sm text-muted">{t("guestHomeHint")}</p>
+                <p className="mt-1.5 text-sm leading-snug text-muted">
+                  {t("guestHomeHint")}
+                </p>
               </div>
               <Link
                 href="/programs"
@@ -111,7 +111,7 @@ export default function HomePage() {
             </div>
           ) : todayProgram ? (
             <>
-              <div className="rounded-2xl bg-surface p-6 app-card">
+              <div className="rounded-2xl bg-surface p-5 app-card">
                 <div className="mb-2 flex items-center gap-2">
                   <span className="rounded bg-lime/15 px-2 py-0.5 text-xs font-semibold text-lime">
                     {programModeLabel(todayProgram.mode, t)}
@@ -129,24 +129,22 @@ export default function HomePage() {
               </div>
               <Link
                 href={workoutHref}
-                className="mt-8 block w-full rounded-xl bg-lime py-4 text-center text-lg font-bold text-white"
+                className="mt-5 block w-full rounded-xl bg-lime py-4 text-center text-lg font-bold text-white"
               >
                 {t("startWorkout")}
               </Link>
             </>
           ) : (
-            <div className="flex flex-1 flex-col justify-center">
-              <div className="rounded-2xl bg-surface p-6 app-card">
-                <p className="text-sm text-muted">
-                  {t("noProgramAssigned")}
-                </p>
-                <Link
-                  href="/schedule"
-                  className="mt-4 inline-block text-sm font-medium text-lime underline"
-                >
-                  {t("schedule")}
-                </Link>
-              </div>
+            <div className="rounded-2xl bg-surface p-5 app-card">
+              <p className="text-sm leading-snug text-muted">
+                {t("noProgramAssigned")}
+              </p>
+              <Link
+                href="/schedule"
+                className="mt-3 inline-block text-sm font-medium text-lime underline"
+              >
+                {t("schedule")}
+              </Link>
             </div>
           )}
         </PageContent>

@@ -23,7 +23,7 @@ export function PageHeader({
     "-ml-1 mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-muted hover:text-foreground";
 
   return (
-    <header className="border-b border-border/70 px-6 pt-12 pb-5">
+    <header className="border-b border-border/70 px-6 pt-6 pb-4">
       <div className="flex items-start gap-3">
         {onBackClick ? (
           <button
@@ -50,7 +50,7 @@ export function PageHeader({
             {title}
           </h1>
           {subtitle ? (
-            <p className="mt-1.5 text-sm leading-relaxed text-muted">{subtitle}</p>
+            <p className="mt-1 text-sm leading-snug text-muted">{subtitle}</p>
           ) : null}
         </div>
 
@@ -74,8 +74,8 @@ export function HomeHeader({
   profileLabel: string;
 }) {
   return (
-    <header className="border-b border-border/70 px-6 pt-12 pb-5">
-      <div className="mb-3 flex items-center justify-between">
+    <header className="border-b border-border/70 px-6 pt-5 pb-4">
+      <div className="mb-2 flex items-center justify-between">
         <span className="timer-font text-lg font-bold tracking-tight text-foreground">
           Pace<span className="text-lime">Set</span>
         </span>
@@ -83,10 +83,10 @@ export function HomeHeader({
           <User className="h-5 w-5" />
         </HeaderIconButton>
       </div>
-      <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+      <h1 className="text-xl font-semibold tracking-tight text-foreground">
         {title}
       </h1>
-      <p className="mt-1.5 text-sm leading-relaxed text-muted">{subtitle}</p>
+      <p className="mt-1 text-sm leading-snug text-muted">{subtitle}</p>
     </header>
   );
 }
