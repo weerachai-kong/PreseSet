@@ -3,6 +3,7 @@
 .vscode/
 .idea/
 *.pem
+*.txt
 
 # Dependencies
 node_modules/
