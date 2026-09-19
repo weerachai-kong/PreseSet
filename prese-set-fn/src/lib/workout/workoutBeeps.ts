@@ -162,10 +162,11 @@ function getAudioContext(): AudioContext | null {
   return audioCtx;
 }
 
-/** Map 0–100 slider to audible gain. */
+/** Map 0–100 slider to audible gain (kept loud enough on phones/tablets). */
 export function beepVolumeGain(level: number): number {
   const clamped = Math.min(100, Math.max(0, level));
-  return 0.04 + (clamped / 100) * 0.26;
+  // ~0.22 at 0% … ~0.92 at 100% — previous 0.04–0.30 was barely audible
+  return 0.22 + (clamped / 100) * 0.7;
 }
 
 export function isBeepSoundPreset(value: unknown): value is BeepSoundPreset {
@@ -193,7 +194,9 @@ function playTone(
   gain.connect(ctx.destination);
 
   const start = ctx.currentTime;
-  gain.gain.setValueAtTime(volume, start);
+  const peak = Math.min(0.95, volume);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(peak, start + 0.01);
   gain.gain.exponentialRampToValueAtTime(0.001, start + durationSec);
 
   oscillator.start(start);
@@ -234,6 +237,27 @@ export function playPhaseEndBeeps(
   const def = getPresetDefinition(preset);
   const tones = endedPhase === "WORK" ? def.work : def.rest;
   playBurst(tones, volume, def.defaultType, def.defaultDurationMs);
+}
+
+/** Single tick for 3–2–1 countdown before a phase ends. */
+export function playCountdownBeep(
+  secondsLeft: 1 | 2 | 3,
+  volume = 0.18,
+  preset: BeepSoundPreset = "classic",
+) {
+  const def = getPresetDefinition(preset);
+  const frequency =
+    secondsLeft === 1
+      ? 988
+      : secondsLeft === 2
+        ? 880
+        : 784;
+  playBurst(
+    [{ frequency, gapMs: 0, durationMs: secondsLeft === 1 ? 140 : 90 }],
+    volume,
+    def.defaultType,
+    def.defaultDurationMs,
+  );
 }
 
 /** Longer pattern when the full workout finishes. */
