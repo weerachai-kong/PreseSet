@@ -15,6 +15,7 @@ import { useSettings } from "@/lib/settings/SettingsContext";
 import { formatClock } from "@/lib/workout/formatTime";
 import {
   beepVolumeGain,
+  playCountdownBeep,
   playPhaseEndBeeps,
   playWorkoutCompleteBeeps,
   primeWorkoutAudio,
@@ -67,8 +68,12 @@ function IntervalWorkoutContent() {
       const lastIdx = lastSegmentIndexForStep(timeline, step.order);
       const hasTimeline = firstIdx >= 0;
       const resumeIdx = stepResumeIndex[step.order] ?? firstIdx;
-      const isActive =
-        hasTimeline && segmentIndex >= firstIdx && segmentIndex <= lastIdx;
+      const currentSeg = timeline[segmentIndex];
+      const isActive = Boolean(
+        currentSeg &&
+          (currentSeg.stepOrder === step.order ||
+            currentSeg.circuitStepOrders?.includes(step.order)),
+      );
       const isDone = hasTimeline && resumeIdx > lastIdx;
       return {
         step,
@@ -300,6 +305,34 @@ function IntervalWorkoutContent() {
       settings.beepSoundPreset,
     );
   }, [finished, settings.beepEnabled, settings.beepVolume, settings.beepSoundPreset]);
+
+  useEffect(() => {
+    if (
+      loading ||
+      paused ||
+      finished ||
+      !settings.beepEnabled ||
+      !current ||
+      current.awaitConfirm
+    ) {
+      return;
+    }
+    if (secondsLeft !== 3 && secondsLeft !== 2 && secondsLeft !== 1) return;
+    playCountdownBeep(
+      secondsLeft,
+      beepVolumeGain(settings.beepVolume),
+      settings.beepSoundPreset,
+    );
+  }, [
+    secondsLeft,
+    loading,
+    paused,
+    finished,
+    current,
+    settings.beepEnabled,
+    settings.beepVolume,
+    settings.beepSoundPreset,
+  ]);
 
   useEffect(() => {
     if (

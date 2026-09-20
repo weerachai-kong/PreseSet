@@ -672,6 +672,7 @@ function EditProgramContent() {
                 </div>
 
               {step.kind === "INTERVAL" ? (
+                <>
                 <div className="grid grid-cols-3 gap-2">
                   <div>
                     <label className="mb-1 block text-[10px] text-lime/80">
@@ -707,6 +708,10 @@ function EditProgramContent() {
                     />
                   </div>
                 </div>
+                <p className="mt-2 text-[11px] leading-snug text-muted">
+                  {t("circuitHint")}
+                </p>
+                </>
               ) : (
                 <div className="grid grid-cols-2 gap-2">
                   <div>

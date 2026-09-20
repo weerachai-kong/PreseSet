@@ -148,6 +148,8 @@ export const dictionaries = {
     instruction: "Notes (optional)",
     workSec: "Work (sec)",
     restSec: "Rest (sec)",
+    circuitHint:
+      "HIIT circuit: consecutive Interval steps play as one circuit of N moves — round 1 of every step, then rest (from the last step), then round 2, and so on. A Reps/Sets step starts a new block.",
     stepRounds: "Rounds",
     holdSec: "Hold (sec)",
     repsCount: "Reps",
@@ -304,6 +306,8 @@ export const dictionaries = {
     instruction: "หมายเหตุ (ไม่บังคับ)",
     workSec: "ออกแรง (วิ)",
     restSec: "พัก (วิ)",
+    circuitHint:
+      "HIIT แบบวงรอบ: ท่า Interval ที่เรียงติดกันทั้งหมดเป็นวงเดียว (กี่ท่าก็ได้) — ทำรอบ 1 ของทุกท่า แล้วพัก (ใช้พักของท่าสุดท้าย) จากนั้นรอบ 2 … ถ้ามีท่ารอบ/เซ็ตคั่น จะเริ่มบล็อกใหม่",
     stepRounds: "รอบ",
     holdSec: "ค้าง (วิ)",
     repsCount: "ครั้ง",
