@@ -1,3 +1,15 @@
+# PaceSet — Deploy ดูที่ไหน
+
+| ส่วน | Platform | Dashboard |
+|------|----------|-----------|
+| **FN** (frontend) | **Vercel** | https://vercel.com/ → โปรเจกต์ `prese-set-fn` (Root Directory: `prese-set-fn`) |
+| **BN** (backend) | **Render** | https://dashboard.render.com/ → service `preseset-api` (Root Directory: `prese-set-bn`) |
+| **DB** | **Neon** | https://console.neon.tech/ → คัดลอก `DATABASE_URL` ไปใส่ใน Render Environment |
+
+Production URL โดยประมาณ: FN `https://prese-set.vercel.app` · BN `https://preseset-api.onrender.com`
+
+---
+
 # PaceSet — Local Setup
 
 Mobile workout pacing app (Interval + Reps & Sets)
