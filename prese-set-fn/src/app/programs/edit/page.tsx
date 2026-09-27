@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, GripVertical, Repeat2, Timer } from "lucide-react";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { ButtonLoadingLabel, ListSkeleton } from "@/components/Loading";
 import { LoginPrompt, PageLoading } from "@/components/LoginPrompt";
 import { PageContent } from "@/components/PageContent";
 import { PageHeader } from "@/components/PageHeader";
@@ -391,16 +392,16 @@ function EditProgramContent() {
     }
   };
 
-  if (authLoading) {
-    return <PageLoading />;
+  if (authLoading || (token && loading)) {
+    return (
+      <PageContent>
+        <ListSkeleton count={3} />
+      </PageContent>
+    );
   }
 
   if (!token) {
     return <LoginPrompt />;
-  }
-
-  if (loading) {
-    return <PageLoading />;
   }
 
   const visibleSteps =
@@ -461,7 +462,9 @@ function EditProgramContent() {
               disabled={saving || !name.trim()}
               className="text-sm font-semibold text-lime transition-colors hover:text-accent-dark disabled:opacity-40"
             >
-              {saving ? t("loading") : t("save")}
+              <ButtonLoadingLabel loading={saving} tone="brand">
+                {t("save")}
+              </ButtonLoadingLabel>
             </button>
           }
         />
@@ -853,7 +856,7 @@ function EditProgramContent() {
 export default function EditProgramPage() {
   return (
     <PhoneShell>
-      <Suspense fallback={<p className="px-6 pt-14 text-sm text-muted">…</p>}>
+      <Suspense fallback={<PageLoading />}>
         <EditProgramContent />
       </Suspense>
     </PhoneShell>

@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { LoginPrompt, PageLoading } from "@/components/LoginPrompt";
+import { ListSkeleton } from "@/components/Loading";
+import { LoginPrompt } from "@/components/LoginPrompt";
 import { PageContent } from "@/components/PageContent";
 import { PageHeader } from "@/components/PageHeader";
 import { PhoneShell } from "@/components/PhoneShell";
@@ -204,7 +205,9 @@ export default function ProfilePage() {
         />
 
         {authLoading ? (
-          <PageLoading />
+          <PageContent>
+            <ListSkeleton count={3} />
+          </PageContent>
         ) : !token ? (
           <LoginPrompt />
         ) : (

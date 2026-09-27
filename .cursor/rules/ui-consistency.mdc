@@ -19,6 +19,18 @@ import { DeleteIconButton } from "@/components/DeleteIconButton";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 ```
 
+## Loading states
+
+Never show plain "Loading…" text. Use `@/components/Loading`:
+
+| Situation | Use |
+|-----------|-----|
+| App boot / auth check / route or Suspense fallback | `PageLoading` or `LogoLoader` (pulsing PaceSet logo) |
+| Data being fetched inside a page (lists, cards) | `ListSkeleton` / `CardSkeleton` / `SkeletonBlock` |
+| Save / delete / submit button busy | `ButtonLoadingLabel` (spinner + text; `tone="brand"` on text-only buttons) |
+
+`ConfirmDialog` already shows the spinner when `loading` is true.
+
 ## Shared building blocks
 
 | Need | Use |

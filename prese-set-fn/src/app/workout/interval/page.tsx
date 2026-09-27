@@ -52,6 +52,8 @@ function IntervalWorkoutContent() {
   );
   const prevSegmentRef = useRef<number | null>(null);
   const finishedBeepRef = useRef(false);
+  /** Set when the long "1" beep played, so the phase-end burst is skipped. */
+  const countdownFinalRef = useRef(false);
   const workoutStartedAtRef = useRef<Date | null>(null);
   const sessionSaveRef = useRef(false);
 
@@ -69,12 +71,29 @@ function IntervalWorkoutContent() {
       const hasTimeline = firstIdx >= 0;
       const resumeIdx = stepResumeIndex[step.order] ?? firstIdx;
       const currentSeg = timeline[segmentIndex];
-      const isActive = Boolean(
-        currentSeg &&
-          (currentSeg.stepOrder === step.order ||
-            currentSeg.circuitStepOrders?.includes(step.order)),
-      );
-      const isDone = hasTimeline && resumeIdx > lastIdx;
+      const isActive = currentSeg?.stepOrder === step.order;
+
+      // Inside the running circuit: status is per round, not per whole step.
+      let roundStatus: "done" | "upcoming" | null = null;
+      let roundText: string | null = null;
+      if (currentSeg?.circuitId != null && !isActive) {
+        const idxThisRound = timeline.findIndex(
+          (s) =>
+            s.circuitId === currentSeg.circuitId &&
+            s.round === currentSeg.round &&
+            s.stepOrder === step.order,
+        );
+        if (idxThisRound >= 0) {
+          roundStatus = idxThisRound < segmentIndex ? "done" : "upcoming";
+          roundText = `${currentSeg.round}/${currentSeg.totalRounds}`;
+        }
+      }
+      if (isActive && currentSeg) {
+        roundText = `${currentSeg.round}/${currentSeg.totalRounds}`;
+      }
+
+      const isDone =
+        roundStatus == null && hasTimeline && resumeIdx > lastIdx;
       return {
         step,
         kind,
@@ -82,10 +101,33 @@ function IntervalWorkoutContent() {
         firstIdx,
         isActive,
         isDone,
+        roundStatus,
+        roundText,
         hasTimeline,
       };
     });
   }, [program, timeline, segmentIndex, stepResumeIndex]);
+
+  const nextTitle = useMemo(() => {
+    const cur = timeline[segmentIndex];
+    if (!cur) return null;
+    for (let i = segmentIndex + 1; i < timeline.length; i++) {
+      const s = timeline[i];
+      if (s.stepOrder !== cur.stepOrder || s.phase !== cur.phase) {
+        return s.stepTitle;
+      }
+    }
+    return null;
+  }, [timeline, segmentIndex]);
+
+  const playlistItemRefs = useRef<Map<number, HTMLLIElement>>(new Map());
+  const activeStepOrder = timeline[segmentIndex]?.stepOrder;
+  useEffect(() => {
+    if (activeStepOrder == null) return;
+    playlistItemRefs.current
+      .get(activeStepOrder)
+      ?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [activeStepOrder]);
 
   const current: WorkoutSegment | null = timeline[segmentIndex] ?? null;
   const totalSec = totalTimelineSeconds(timeline);
@@ -280,7 +322,9 @@ function IntervalWorkoutContent() {
     if (prevSegmentRef.current === segmentIndex) return;
 
     const ended = timeline[prevSegmentRef.current];
-    if (ended) {
+    const countdownCovered = countdownFinalRef.current;
+    countdownFinalRef.current = false;
+    if (ended && !countdownCovered) {
       playPhaseEndBeeps(
         ended.phase,
         beepVolumeGain(settings.beepVolume),
@@ -318,6 +362,7 @@ function IntervalWorkoutContent() {
       return;
     }
     if (secondsLeft !== 3 && secondsLeft !== 2 && secondsLeft !== 1) return;
+    if (secondsLeft === 1) countdownFinalRef.current = true;
     playCountdownBeep(
       secondsLeft,
       beepVolumeGain(settings.beepVolume),
@@ -509,6 +554,11 @@ function IntervalWorkoutContent() {
               ) : null}
             </>
           )}
+          {nextTitle ? (
+            <p className="mt-2 text-xs text-muted">
+              {t("nextUp")}: <span className="font-semibold">{nextTitle}</span>
+            </p>
+          ) : null}
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-2">
@@ -530,17 +580,44 @@ function IntervalWorkoutContent() {
           {t("workoutPlaylist")}
         </p>
         <ul className="space-y-2 pb-2">
-          {playlist.map(({ step, kind, detail, isActive, isDone, hasTimeline }) => (
-            <li key={step.id}>
+          {playlist.map(
+            ({
+              step,
+              kind,
+              detail,
+              isActive,
+              isDone,
+              roundStatus,
+              roundText,
+              hasTimeline,
+            }) => {
+              const dimmed = isDone || roundStatus === "done";
+              const statusText = isActive
+                ? t("workoutStepActive")
+                : roundStatus === "done"
+                  ? t("workoutStepDoneRound")
+                  : roundStatus === "upcoming"
+                    ? t("workoutStepUpcoming")
+                    : isDone
+                      ? t("workoutStepDone")
+                      : t("workoutStepUpcoming");
+              return (
+            <li
+              key={step.id}
+              ref={(el) => {
+                if (el) playlistItemRefs.current.set(step.order, el);
+                else playlistItemRefs.current.delete(step.order);
+              }}
+            >
               <button
                 type="button"
                 disabled={!hasTimeline || isActive}
                 onClick={() => jumpToStep(step.order)}
                 className={`flex w-full items-start gap-3 rounded-xl border px-3 py-3 text-left transition-colors ${
                   isActive
-                    ? "border-lime/50 bg-lime/10"
-                    : isDone
-                      ? "border-border bg-surface-muted/80 opacity-70"
+                    ? "border-2 border-lime bg-lime/15 shadow-sm"
+                    : dimmed
+                      ? "border-border bg-surface-muted/80 opacity-60"
                       : "border-border bg-surface app-card hover:border-lime/30"
                 } disabled:cursor-default`}
               >
@@ -548,7 +625,7 @@ function IntervalWorkoutContent() {
                   className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                     isActive
                       ? "bg-lime text-white"
-                      : isDone
+                      : dimmed
                         ? "bg-surface-muted text-muted"
                         : "bg-surface-muted text-foreground/70"
                   }`}
@@ -573,17 +650,20 @@ function IntervalWorkoutContent() {
                   {detail ? (
                     <p className="mt-0.5 truncate text-xs text-muted">{detail}</p>
                   ) : null}
-                  <p className="mt-1 text-[10px] font-medium text-lime">
-                    {isActive
-                      ? t("workoutStepActive")
-                      : isDone
-                        ? t("workoutStepDone")
-                        : t("workoutStepUpcoming")}
+                  <p
+                    className={`mt-1 text-[10px] ${
+                      isActive ? "font-bold text-lime" : "font-medium text-lime/80"
+                    }`}
+                  >
+                    {statusText}
+                    {roundText ? ` · ${t("rounds")} ${roundText}` : ""}
                   </p>
                 </div>
               </button>
             </li>
-          ))}
+              );
+            },
+          )}
         </ul>
       </div>
 

@@ -79,6 +79,43 @@ body {
   box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.15);
 }
 
+/* Loading patterns: skeleton shimmer + pulsing logo (see components/Loading.tsx) */
+.skeleton {
+  border-radius: 0.5rem;
+  background: linear-gradient(90deg, #dde3ea 25%, #f5f7fa 50%, #dde3ea 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.2s linear infinite;
+}
+
+@keyframes skeleton-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.logo-pulse {
+  animation: logo-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes logo-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.97);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .logo-pulse {
+    animation-duration: 3s;
+  }
+}
+
 /* legacy alias */
 .card-shadow {
   border: 1px solid var(--border);

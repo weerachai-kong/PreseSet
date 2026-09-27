@@ -4,6 +4,7 @@
 .idea/
 *.pem
 *.txt
+loading-samples.html
 
 # Dependencies
 node_modules/

@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DeleteIconButton } from "@/components/DeleteIconButton";
-import { LoginPrompt, PageLoading } from "@/components/LoginPrompt";
+import { ListSkeleton } from "@/components/Loading";
+import { LoginPrompt } from "@/components/LoginPrompt";
 import { PageContent } from "@/components/PageContent";
 import { PageHeader, HeaderMeta } from "@/components/PageHeader";
 import { PhoneShell } from "@/components/PhoneShell";
@@ -77,7 +78,7 @@ export default function ProgramsPage() {
 
         <PageContent className="overflow-y-auto">
           {loading ? (
-            <PageLoading />
+            <ListSkeleton count={4} />
           ) : !token ? (
             <LoginPrompt />
           ) : programs.length === 0 ? (
