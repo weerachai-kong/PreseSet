@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { LogoLoader } from "@/components/Loading";
 import { useLocale } from "@/lib/i18n/LocaleContext";
 
 export function LoginPrompt() {
@@ -25,12 +26,7 @@ export function LoginPrompt() {
   );
 }
 
+/** Full-screen boot / route fallback — pulsing PaceSet logo. */
 export function PageLoading() {
-  const { t } = useLocale();
-
-  return (
-    <div className="flex min-h-0 flex-1 items-center justify-center px-6">
-      <p className="text-base text-muted">{t("loading")}</p>
-    </div>
-  );
+  return <LogoLoader />;
 }

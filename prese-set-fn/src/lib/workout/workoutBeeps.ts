@@ -181,6 +181,7 @@ function playTone(
   durationSec: number,
   volume: number,
   type: OscillatorType,
+  sustain = false,
 ) {
   const ctx = getAudioContext();
   if (!ctx) return;
@@ -197,6 +198,11 @@ function playTone(
   const peak = Math.min(0.95, volume);
   gain.gain.setValueAtTime(0.0001, start);
   gain.gain.exponentialRampToValueAtTime(peak, start + 0.01);
+  if (sustain) {
+    // Hold at full volume, then a short release — reads as one long "beeeep".
+    const releaseAt = Math.max(start + 0.02, start + durationSec - 0.08);
+    gain.gain.setValueAtTime(peak, releaseAt);
+  }
   gain.gain.exponentialRampToValueAtTime(0.001, start + durationSec);
 
   oscillator.start(start);
@@ -239,25 +245,21 @@ export function playPhaseEndBeeps(
   playBurst(tones, volume, def.defaultType, def.defaultDurationMs);
 }
 
-/** Single tick for 3–2–1 countdown before a phase ends. */
+/**
+ * F1-style start countdown: short "pip, pip" at 3 and 2, then one long
+ * higher "beeeep" at 1 that carries into the next phase.
+ */
 export function playCountdownBeep(
   secondsLeft: 1 | 2 | 3,
   volume = 0.18,
   preset: BeepSoundPreset = "classic",
 ) {
   const def = getPresetDefinition(preset);
-  const frequency =
-    secondsLeft === 1
-      ? 988
-      : secondsLeft === 2
-        ? 880
-        : 784;
-  playBurst(
-    [{ frequency, gapMs: 0, durationMs: secondsLeft === 1 ? 140 : 90 }],
-    volume,
-    def.defaultType,
-    def.defaultDurationMs,
-  );
+  if (secondsLeft === 1) {
+    playTone(1320, 0.9, volume, def.defaultType, true);
+    return;
+  }
+  playTone(660, 0.15, volume, def.defaultType, true);
 }
 
 /** Longer pattern when the full workout finishes. */

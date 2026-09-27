@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useSyncExternalStore, useState } from "react";
+import { ButtonLoadingLabel } from "@/components/Loading";
 import { PhoneShell } from "@/components/PhoneShell";
 import { sessionsApi } from "@/lib/api";
 import { programModeLabel } from "@/lib/api/helpers";
@@ -137,7 +138,7 @@ export default function SummaryPage() {
           onClick={() => void onSaveDone()}
           className="mt-8 w-full rounded-xl bg-lime py-4 text-lg font-bold text-white disabled:opacity-60"
         >
-          {saving ? "…" : t("saveDone")}
+          <ButtonLoadingLabel loading={saving}>{t("saveDone")}</ButtonLoadingLabel>
         </button>
         <Link href="/home" className="mt-4 text-sm text-muted underline">
           {t("backHome")}

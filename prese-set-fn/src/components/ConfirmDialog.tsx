@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { ButtonLoadingLabel } from "@/components/Loading";
 
 type ConfirmDialogProps = {
   open: boolean;
@@ -60,7 +61,7 @@ export function ConfirmDialog({
   itemName,
   promptAfter,
   loading = false,
-  loadingLabel = "…",
+  loadingLabel,
   error = null,
   onConfirm,
   onCancel,
@@ -125,7 +126,9 @@ export function ConfirmDialog({
             onClick={onConfirm}
             className={`flex-1 rounded-full py-3 text-sm font-semibold text-white disabled:opacity-60 ${confirmBtn}`}
           >
-            {loading ? loadingLabel : confirmLabel}
+            <ButtonLoadingLabel loading={loading} loadingText={loadingLabel}>
+              {confirmLabel}
+            </ButtonLoadingLabel>
           </button>
           <button
             type="button"

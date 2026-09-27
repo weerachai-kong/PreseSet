@@ -19,45 +19,60 @@ export type WorkoutSegment = {
   awaitConfirm?: boolean;
   /** True when this segment is part of a multi-exercise HIIT circuit. */
   inCircuit?: boolean;
-  /** All step orders in this circuit (for playlist highlight during rest). */
-  circuitStepOrders?: number[];
+  /** Order of the first step in the circuit — identifies segments of one circuit. */
+  circuitId?: number;
 };
 
 /** @deprecated alias */
 export type IntervalSegment = WorkoutSegment;
 
+function stepRounds(step: ExerciseStep): number {
+  return Math.max(1, step.rounds ?? 1);
+}
+
+function isIntervalStep(step: ExerciseStep | undefined): step is ExerciseStep {
+  return (
+    step != null &&
+    inferStepKind(step) === "INTERVAL" &&
+    step.workSeconds != null
+  );
+}
+
+/** An Interval step with 0s work is an explicit rest ("พัก (Rest)"). */
+function isRestOnlyStep(step: ExerciseStep): boolean {
+  return (step.workSeconds ?? 0) <= 0;
+}
+
 /**
- * All consecutive INTERVAL steps form one circuit of N exercises:
- *   for round r = 1..maxRounds:
- *     work every step whose rounds >= r
- *     then rest (duration from the last step in the block)
+ * Groups consecutive Interval steps into one HIIT circuit. The circuit ends:
+ * - after a rest-only step (0s work) — that step is the round rest
+ * - before a step with a different number of rounds (e.g. Plank ×4 after ×5)
+ * - before a Reps/Sets step
  *
- * Example: Step1×2, Step2×2, Step3×3 →
- *   R1: S1 → S2 → S3 → Rest(S3)
- *   R2: S1 → S2 → S3 → Rest(S3)
- *   R3: S3 → Rest(S3)
+ * Example: Jump×5, HighKnees×5, Rest(0s work, 30s rest)×5, Plank×4 →
+ *   (Jump → HighKnees → Rest 30s) × 5, then (Plank → Rest) × 4
  */
 function takeIntervalCircuitBlock(
   steps: ExerciseStep[],
   start: number,
 ): ExerciseStep[] {
   const first = steps[start];
-  if (!first || inferStepKind(first) !== "INTERVAL" || first.workSeconds == null) {
-    return [];
-  }
+  if (!isIntervalStep(first)) return [];
 
   const block: ExerciseStep[] = [first];
+  if (isRestOnlyStep(first)) return block;
+
+  const rounds = stepRounds(first);
   let k = start;
 
   while (k + 1 < steps.length) {
     const next = steps[k + 1];
-    if (
-      !next ||
-      inferStepKind(next) !== "INTERVAL" ||
-      next.workSeconds == null
-    ) {
+    if (!isIntervalStep(next)) break;
+    if (isRestOnlyStep(next)) {
+      block.push(next);
       break;
     }
+    if (stepRounds(next) !== rounds) break;
     block.push(next);
     k += 1;
   }
@@ -65,28 +80,23 @@ function takeIntervalCircuitBlock(
   return block;
 }
 
-function stepRounds(step: ExerciseStep): number {
-  return Math.max(1, step.rounds ?? 1);
-}
-
 function pushIntervalCircuit(
   segments: WorkoutSegment[],
   block: ExerciseStep[],
 ) {
-  const circuitRounds = Math.max(...block.map(stepRounds));
   const last = block[block.length - 1];
-  const circuitRest = Math.max(0, last.restSeconds ?? 0);
+  const restStep = isRestOnlyStep(last) ? last : null;
+  const workSteps = restStep ? block.slice(0, -1) : block;
+  const circuitRounds = Math.max(
+    ...(workSteps.length > 0 ? workSteps : block).map(stepRounds),
+  );
+  const restOwner = restStep ?? last;
+  const circuitRest = Math.max(0, restOwner.restSeconds ?? 0);
   const multi = block.length > 1;
-  const circuitStepOrders = block.map((s) => s.order);
-  const circuitTitle = multi
-    ? block.map((s) => s.title).join(" → ")
-    : last.title;
+  const circuitId = block[0].order;
 
   for (let round = 1; round <= circuitRounds; round++) {
-    const active = block.filter((s) => stepRounds(s) >= round);
-    if (active.length === 0) continue;
-
-    for (const s of active) {
+    for (const s of workSteps) {
       segments.push({
         phase: "WORK",
         durationSec: Math.max(1, s.workSeconds ?? 1),
@@ -94,9 +104,9 @@ function pushIntervalCircuit(
         stepOrder: s.order,
         stepKind: "INTERVAL",
         round,
-        totalRounds: stepRounds(s),
+        totalRounds: circuitRounds,
         inCircuit: multi,
-        circuitStepOrders: multi ? circuitStepOrders : undefined,
+        circuitId,
       });
     }
 
@@ -104,13 +114,13 @@ function pushIntervalCircuit(
       segments.push({
         phase: "REST",
         durationSec: circuitRest,
-        stepTitle: circuitTitle,
-        stepOrder: last.order,
+        stepTitle: restOwner.title,
+        stepOrder: restOwner.order,
         stepKind: "INTERVAL",
         round,
         totalRounds: circuitRounds,
         inCircuit: multi,
-        circuitStepOrders: multi ? circuitStepOrders : undefined,
+        circuitId,
       });
     }
   }

@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DeleteIconButton } from "@/components/DeleteIconButton";
-import { LoginPrompt, PageLoading } from "@/components/LoginPrompt";
+import { ButtonLoadingLabel, ListSkeleton } from "@/components/Loading";
+import { LoginPrompt } from "@/components/LoginPrompt";
 import { PageContent } from "@/components/PageContent";
 import { PageHeader } from "@/components/PageHeader";
 import { PhoneShell } from "@/components/PhoneShell";
@@ -135,7 +136,7 @@ export default function SchedulePage() {
 
         <PageContent>
           {loading ? (
-            <PageLoading />
+            <ListSkeleton count={2} />
           ) : !token ? (
             <LoginPrompt />
           ) : (
@@ -194,7 +195,9 @@ export default function SchedulePage() {
                 onClick={() => setPickerOpen(true)}
                 className="mt-6 w-full rounded-xl bg-lime py-4 font-bold text-white disabled:opacity-50"
               >
-                {saving ? t("loading") : t("assignProgram")}
+                <ButtonLoadingLabel loading={saving}>
+                  {t("assignProgram")}
+                </ButtonLoadingLabel>
               </button>
               <p className="mt-4 text-center text-sm text-muted">
                 {t("scheduleHint")}

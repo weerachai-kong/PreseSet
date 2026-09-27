@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { CardSkeleton, LogoLoader, SkeletonBlock } from "@/components/Loading";
 import { HomeHeader } from "@/components/PageHeader";
 import { PageContent } from "@/components/PageContent";
 import { PhoneShell } from "@/components/PhoneShell";
@@ -66,9 +67,7 @@ export default function HomePage() {
   if (!authLoading && !token && !isGuest) {
     return (
       <PhoneShell showNav>
-        <div className="flex h-full items-center justify-center px-6">
-          <p className="text-sm text-muted">{t("loading")}</p>
-        </div>
+        <LogoLoader className="h-full" />
       </PhoneShell>
     );
   }
@@ -85,7 +84,10 @@ export default function HomePage() {
 
         <PageContent className="pt-4 pb-6">
           {loading ? (
-            <p className="pt-2 text-sm text-muted">{t("loading")}</p>
+            <div className="space-y-5">
+              <CardSkeleton />
+              <SkeletonBlock className="h-14 w-full rounded-xl" />
+            </div>
           ) : isGuest ? (
             <div className="space-y-4">
               <div className="rounded-2xl bg-surface p-5 app-card">

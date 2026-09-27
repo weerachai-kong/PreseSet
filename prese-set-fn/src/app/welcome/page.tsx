@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { FormEvent, useState, useSyncExternalStore } from "react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ButtonLoadingLabel } from "@/components/Loading";
 import { PhoneShell } from "@/components/PhoneShell";
 import { authApi } from "@/lib/api";
 import { APP_VERSION } from "@/lib/appVersion";
@@ -146,14 +147,18 @@ export default function WelcomePage() {
           {APP_VERSION}
         </p>
 
-        <div className="timer-font mb-2 text-6xl font-black tracking-tight text-foreground">
+        <div
+          role={isLoading ? "status" : undefined}
+          aria-label={isLoading ? t("loading") : undefined}
+          className={`timer-font mb-2 text-6xl font-black tracking-tight text-foreground ${
+            isLoading ? "logo-pulse" : ""
+          }`}
+        >
           Pace<span className="text-lime">Set</span>
         </div>
         <p className="mt-4 mb-8 text-base text-muted">{t("tagline")}</p>
 
-        {isLoading ? (
-          <p className="text-sm text-muted">{t("loading")}</p>
-        ) : (
+        {isLoading ? null : (
           <form
             onSubmit={onSubmit}
             className="w-full space-y-3 text-left"
@@ -253,13 +258,13 @@ export default function WelcomePage() {
               disabled={submitting}
               className="w-full rounded-xl bg-lime py-4 text-lg font-bold text-white disabled:opacity-60"
             >
-              {submitting
-                ? t("loading")
-                : mode === "login"
+              <ButtonLoadingLabel loading={submitting}>
+                {mode === "login"
                   ? t("signIn")
                   : mode === "register"
                     ? t("createAccount")
                     : t("resetPassword")}
+              </ButtonLoadingLabel>
             </button>
           </form>
         )}
